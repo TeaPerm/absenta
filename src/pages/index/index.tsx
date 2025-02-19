@@ -1,15 +1,19 @@
-import { Header } from '@/components/Header'
-import {Hero} from '@/components/Hero'
+import { Header } from "@/components/Header";
+import { Hero } from "@/components/Hero";
+import { PrimaryFeatures } from "@/components/PrimaryFeatures";
 
 const index = () => {
+
+
   return (
     <>
-      <Header/>
+      <Header />
       <main>
-        <Hero/>
+        <Hero />
+        <PrimaryFeatures />
       </main>
     </>
-  )
-}
+  );
+};
 
-export default index
+export default index;

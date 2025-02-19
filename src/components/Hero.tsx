@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 export function Hero() {
   return (
     <Container className="pt-20 pb-16 text-center lg:pt-32">
-      <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-slate-900 sm:text-7xl">
+      <h1 className="mx-auto sm:leading-20 max-w-4xl text-4xl font-bold tracking-tight text-slate-900 sm:text-7xl">
         Jelenléttartás{" "}
         <span className="relative whitespace-nowrap text-blue-600">
           <svg

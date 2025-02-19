@@ -124,6 +124,9 @@ export function Header() {
               )}
             </Popover>
             <div className="flex items-center gap-6 max-lg:hidden">
+              <Link to="/dashboard">
+                <Button variant="outline">Vezérlőpult</Button>
+              </Link>
               <Link to="/register">
                 <Button variant="outline">Regisztráció</Button>
               </Link>{" "}
