@@ -1,6 +1,4 @@
-import * as React from "react"
-import { ChevronsUpDown, Plus } from "lucide-react"
-
+import { ChevronsUpDown, Plus, University } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,18 +14,16 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { getUniversityName } from "@/lib/utils"
+import { useState } from "react"
 
-export function TeamSwitcher({
-  teams,
+export function UniversitySwitcher({
+  universities,
 }: {
-  teams: {
-    name: string
-    logo: React.ElementType
-    plan: string
-  }[]
+  universities: string[]
 }) {
   const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+  const [activeUniversity, setActiveUniversity] = useState(universities[0])
 
   return (
     <SidebarMenu>
@@ -36,16 +32,16 @@ export function TeamSwitcher({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent h-20 cursor-pointer data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <activeTeam.logo className="size-4" />
+                <University className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {activeTeam.name}
+                <span className="font-semibold">
+                  {getUniversityName(activeUniversity)}
                 </span>
-                <span className="truncate text-xs">{activeTeam.plan}</span>
+                <span className="truncate text-xs">{activeUniversity}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -57,19 +53,19 @@ export function TeamSwitcher({
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-muted-foreground text-xs">
-              Teams
+              Egyetemek
             </DropdownMenuLabel>
-            {teams.map((team, index) => (
+            {universities.map((university) => (
               <DropdownMenuItem
-                key={team.name}
-                onClick={() => setActiveTeam(team)}
+                key={university}
+                onClick={() => setActiveUniversity(university)}
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-xs border">
-                  <team.logo className="size-4 shrink-0" />
+                  <University className="size-4 shrink-0" />
                 </div>
-                {team.name}
-                <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                {university}
+                <DropdownMenuShortcut className="text-xs">{university}</DropdownMenuShortcut>
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
@@ -77,7 +73,7 @@ export function TeamSwitcher({
               <div className="bg-background flex size-6 items-center justify-center rounded-md border">
                 <Plus className="size-4" />
               </div>
-              <div className="text-muted-foreground font-medium">Add team</div>
+              <div className="text-muted-foreground font-medium">Egyetem hozzáadása</div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

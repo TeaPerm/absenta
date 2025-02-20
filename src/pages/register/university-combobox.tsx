@@ -1,5 +1,8 @@
+"use client";
+
 import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,21 +18,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useQuery } from "@tanstack/react-query";
+import universities from "@/lib/universites";
 
-export function UniversityCombobox() {
-  const { data: universities, isLoading, error } = useQuery({
-    queryKey: ["universities"],
-    queryFn: async () => {
-      const response = await fetch(
-        "http://universities.hipolabs.com/search?country=Hungary"
-      );
-      return response.json();
-    },
-  });
-
+export function UniversityCombobox({ field }: { field: any }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+
+  const universitiesArray = Object.entries(universities).map(
+    ([key, value]) => ({
+      code: key,
+      name: value.name,
+    })
+  );
+
+  const selectedUniversity = universitiesArray.find(
+    (uni) => uni.code === field.value
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -38,38 +41,46 @@ export function UniversityCombobox() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="justify-between w-full"
+          className="w-full justify-between"
         >
-          {value || "Select university..."}
-          <ChevronsUpDown className="opacity-50" />
+          {selectedUniversity ? (
+            <span>
+              {selectedUniversity.name}
+              <span className="text-xs text-foreground/70">
+                {" "}
+                ({selectedUniversity.code})
+              </span>
+            </span>
+          ) : (
+            "Egyetem kiválasztása..."
+          )}
+
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-0">
+      <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput placeholder="Search university..." className="h-9" />
+          <CommandInput placeholder="Egyetem kiválasztása..." />
           <CommandList>
-            {isLoading && <CommandEmpty>Loading...</CommandEmpty>}
-            {error && <CommandEmpty>Error fetching data.</CommandEmpty>}
-            {!isLoading && universities?.length === 0 && (
-              <CommandEmpty>No universities found.</CommandEmpty>
-            )}
+            <CommandEmpty>Nem található ilyen egyetem.</CommandEmpty>
             <CommandGroup>
-              {universities?.map((university) => (
+              {universitiesArray.map((uni) => (
                 <CommandItem
-                  key={university.name}
-                  value={university.name}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
+                  key={uni.code}
+                  value={uni.code}
+                  onSelect={(currentValue: string) => {
+                    field.onChange(currentValue);
                     setOpen(false);
                   }}
                 >
-                  {university.name}
                   <Check
                     className={cn(
-                      "ml-auto",
-                      value === university.name ? "opacity-100" : "opacity-0"
+                      "mr-2 h-4 w-4",
+                      field.value === uni.code ? "opacity-100" : "opacity-0"
                     )}
                   />
+                  {uni.name}
+                  <span className="text-xs text-foreground/70">{` (${uni.code})`}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -11,6 +11,7 @@ import { Container } from "@/components/ui/container";
 import Logo from "@/components/ui/logo";
 import { Link } from "react-router-dom";
 import { NavLinks } from "@/components/ui/navLink";
+import { useAuthStore } from "@/hooks/useAuth";
 
 function MenuIcon(props: React.ComponentPropsWithoutRef<"svg">) {
   return (
@@ -123,20 +124,36 @@ export function Header() {
                 </>
               )}
             </Popover>
-            <div className="flex items-center gap-6 max-lg:hidden">
-              <Link to="/dashboard">
-                <Button variant="outline">Vezérlőpult</Button>
-              </Link>
-              <Link to="/register">
-                <Button variant="outline">Regisztráció</Button>
-              </Link>{" "}
-              <Link to="/login">
-                <Button>Belépés</Button>
-              </Link>
-            </div>
+            <AuthenticatedLayout />
           </div>
         </Container>
       </nav>
     </header>
+  );
+}
+
+function AuthenticatedLayout() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  console.log(isAuthenticated)
+
+  if (isAuthenticated) {
+    return (
+      <div className="max-lg:hidden">
+        <Link to="/dashboard">
+          <Button variant="outline">Vezérlőpult</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-6 max-lg:hidden">
+      <Link to="/register">
+        <Button variant="outline">Regisztráció</Button>
+      </Link>{" "}
+      <Link to="/login">
+        <Button>Belépés</Button>
+      </Link>
+    </div>
   );
 }

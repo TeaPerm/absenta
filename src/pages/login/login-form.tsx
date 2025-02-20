@@ -10,14 +10,16 @@ import { Form, FormField, FormMessage } from "@/components/ui/form";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { API_URL } from "@/lib/constants";
+import { useAuthStore } from "@/hooks/useAuth";
 
 const formSchema = z.object({
-  email: z.string().email().min(1),
-  password: z.string().min(8),
-});
+  email: z.string().email({ message: "Érvényes email címet kell megadni" }).min(1, { message: "Az email mező nem lehet üres" }),
+  password: z.string().min(8, { message: "A jelszónak legalább 8 karakter hosszúnak kell lennie" }),
+}).required();
 
 export function LoginForm() {
   const navigate = useNavigate();
+  const signIn = useAuthStore((state) => state.signIn);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -35,9 +37,10 @@ export function LoginForm() {
       const errors = err.response.data;
       console.log(errors);
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log(response)
-      navigate("/dashboard");
+      signIn(response.data.token);
+      navigate("/");
     },
   });
 
