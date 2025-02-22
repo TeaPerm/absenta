@@ -5,3 +5,15 @@ export interface User {
     email: string;
     university: string[];
 }
+
+interface Student{
+    name: string;
+    neptun_code: string;
+}
+
+export interface Course{
+    _id: string;
+    name: string;
+    university: string;
+    students: [Student];
+}

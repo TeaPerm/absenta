@@ -1,4 +1,4 @@
-import { ChevronsUpDown, Plus, University } from "lucide-react"
+import { ChevronsUpDown, Plus, University } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,23 +7,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { getUniversityName } from "@/lib/utils"
-import { useState } from "react"
+} from "@/components/ui/sidebar";
+import { getUniversityName } from "@/lib/utils";
+import { useAppStore } from "@/hooks/useAppStore";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function UniversitySwitcher({
   universities,
 }: {
-  universities: string[]
+  universities: string[];
 }) {
-  const { isMobile } = useSidebar()
-  const [activeUniversity, setActiveUniversity] = useState(universities[0])
+  const { isMobile } = useSidebar();
+
+  const selectedUniversity = useAppStore((state) => state.selectedUniversity);
+  const setSelectedUniversity = useAppStore(
+    (state) => state.setSelectedUniversity
+  );
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!selectedUniversity && universities.length > 0) {
+      setSelectedUniversity(universities[0]);
+    }
+  });
 
   return (
     <SidebarMenu>
@@ -39,9 +52,9 @@ export function UniversitySwitcher({
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="font-semibold">
-                  {getUniversityName(activeUniversity)}
+                  {getUniversityName(selectedUniversity)}
                 </span>
-                <span className="truncate text-xs">{activeUniversity}</span>
+                <span className="truncate text-xs">{selectedUniversity}</span>
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -58,14 +71,19 @@ export function UniversitySwitcher({
             {universities.map((university) => (
               <DropdownMenuItem
                 key={university}
-                onClick={() => setActiveUniversity(university)}
-                className="gap-2 p-2"
+                onClick={() => {
+                  queryClient.invalidateQueries({ queryKey: [selectedUniversity] });
+                  setSelectedUniversity(university);
+                }}
+                className="gap-2 p-2 cursor-pointer"
               >
                 <div className="flex size-6 items-center justify-center rounded-xs border">
                   <University className="size-4 shrink-0" />
                 </div>
                 {university}
-                <DropdownMenuShortcut className="text-xs">{university}</DropdownMenuShortcut>
+                <DropdownMenuShortcut className="text-xs">
+                  {university}
+                </DropdownMenuShortcut>
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
@@ -73,11 +91,13 @@ export function UniversitySwitcher({
               <div className="bg-background flex size-6 items-center justify-center rounded-md border">
                 <Plus className="size-4" />
               </div>
-              <div className="text-muted-foreground font-medium">Egyetem hozzáadása</div>
+              <div className="text-muted-foreground font-medium">
+                Egyetem hozzáadása
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
