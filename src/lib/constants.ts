@@ -11,7 +11,7 @@ interface Student{
     neptun_code: string;
 }
 
-export interface Course{
+export interface CourseData{
     _id: string;
     name: string;
     university: string;

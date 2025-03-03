@@ -12,6 +12,7 @@ import Logo from "@/components/ui/logo";
 import { Link } from "react-router-dom";
 import { NavLinks } from "@/components/ui/navLink";
 import { useAuthStore } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/useUser";
 
 function MenuIcon(props: React.ComponentPropsWithoutRef<"svg">) {
   return (
@@ -134,12 +135,13 @@ export function Header() {
 
 function AuthenticatedLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  console.log(isAuthenticated)
+  const user = useUser();
+  console.log(user);
 
   if (isAuthenticated) {
     return (
       <div className="max-lg:hidden">
-        <Link to="/dashboard">
+        <Link to={`${user?.university[0]}`}>
           <Button variant="outline">Vezérlőpult</Button>
         </Link>
       </div>

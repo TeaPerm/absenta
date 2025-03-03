@@ -3,6 +3,8 @@ import Index from '@/pages/index/index'
 import Login from '@/pages/login/login'
 import Register from '@/pages/register/register'
 import Dashboard from '@/pages/dashboard/dashboard'
+import Layout from '@/components/Layout'
+import Course from './course/course'
 
 function Router() {
   return (
@@ -10,7 +12,13 @@ function Router() {
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login/>} />
       <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/:university" element={<Layout />}>
+          <Route index element={<Dashboard />} />
+           <Route path=":courseId" element={<Course />} />
+      </Route>
+      {/* <Route path="/courses/:courseId" element={<Layout />}>
+          <Route index element={<Course />} />
+      </Route> */}
     </Routes>
   )
 }

@@ -16,16 +16,16 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { useQuery } from "@tanstack/react-query";
-import { API_URL, Course } from "@/lib/constants";
+import { API_URL, CourseData } from "@/lib/constants";
 import { useAuthStore } from "@/hooks/useAuth";
-import { useAppStore } from "@/hooks/useAppStore";
 import { Button } from "./ui/button";
+import { Link, useParams } from "react-router-dom";
 
 export function NavMain() {
   const token = useAuthStore((state) => state.token);
-  const selectedUniversity = useAppStore((state) => state.selectedUniversity);
+  const {university : selectedUniversity} = useParams();
 
-  const { data: courses, isLoading } = useQuery<[Course]>({
+  const { data: courses, isLoading } = useQuery<[CourseData]>({
     queryKey: [selectedUniversity],
     queryFn: async () => {
       const response = await fetch(
@@ -42,8 +42,6 @@ export function NavMain() {
       return data;
     },
   });
-
-  console.log(courses);
 
   return (
     <SidebarGroup>
@@ -67,7 +65,6 @@ export function NavMain() {
             <Collapsible
               key={course._id}
               asChild
-              // defaultOpen={item.isActive}
               className="group/collapsible"
             >
               <SidebarMenuItem>
@@ -86,9 +83,9 @@ export function NavMain() {
                     {sidebarMenuSubitems.map((item) => (
                       <SidebarMenuSubItem key={item.title}>
                         <SidebarMenuSubButton asChild>
-                          <a href={item.url}>
+                          <Link to={`/${selectedUniversity}/${course._id}${item.url}`}>
                             <span>{item.title}</span>
-                          </a>
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
@@ -104,15 +101,19 @@ export function NavMain() {
 
 const sidebarMenuSubitems = [
   {
+    title: "Kezdőlap",
+    url: "", // This will route to /courses/:courseId
+  },
+  {
     title: "Tanulók",
-    url: "#",
+    url: "/students", // This will route to /courses/:courseId/students
   },
   {
     title: "Jelenléti ívek",
-    url: "#",
+    url: "/attendance", // This will route to /courses/:courseId/attendance
   },
   {
     title: "Beállítások",
-    url: "#",
+    url: "/settings", // This will route to /courses/:courseId/settings
   },
 ];

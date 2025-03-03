@@ -15,9 +15,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { getUniversityName } from "@/lib/utils";
-import { useAppStore } from "@/hooks/useAppStore";
-import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
 
 export function UniversitySwitcher({
   universities,
@@ -25,18 +24,15 @@ export function UniversitySwitcher({
   universities: string[];
 }) {
   const { isMobile } = useSidebar();
+  const navigate = useNavigate();
 
-  const selectedUniversity = useAppStore((state) => state.selectedUniversity);
-  const setSelectedUniversity = useAppStore(
-    (state) => state.setSelectedUniversity
-  );
+  const { university: selectedUniversity } = useParams();
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!selectedUniversity && universities.length > 0) {
-      setSelectedUniversity(universities[0]);
-    }
-  });
+  if(!selectedUniversity) {
+    navigate("/")
+    return null
+  }
 
   return (
     <SidebarMenu>
@@ -54,7 +50,7 @@ export function UniversitySwitcher({
                 <span className="font-semibold">
                   {getUniversityName(selectedUniversity)}
                 </span>
-                <span className="truncate text-xs">{selectedUniversity}</span>
+                {/* <span className="truncate text-xs">{selectedUniversity}</span> */}
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
@@ -72,8 +68,10 @@ export function UniversitySwitcher({
               <DropdownMenuItem
                 key={university}
                 onClick={() => {
-                  queryClient.invalidateQueries({ queryKey: [selectedUniversity] });
-                  setSelectedUniversity(university);
+                  queryClient.invalidateQueries({
+                    queryKey: [selectedUniversity],
+                  });
+                  navigate(`/${university}`);
                 }}
                 className="gap-2 p-2 cursor-pointer"
               >
