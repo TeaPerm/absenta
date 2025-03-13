@@ -5,6 +5,7 @@ import Register from '@/pages/register/register'
 import Dashboard from '@/pages/dashboard/dashboard'
 import Layout from '@/components/Layout'
 import Course from './course/course'
+import { Students } from './course/students'
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/:university" element={<Layout />}>
           <Route index element={<Dashboard />} />
            <Route path=":courseId" element={<Course />} />
+           <Route path=":courseId/students" element={<Students />} />
       </Route>
       {/* <Route path="/courses/:courseId" element={<Layout />}>
           <Route index element={<Course />} />

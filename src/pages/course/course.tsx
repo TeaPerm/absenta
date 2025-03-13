@@ -1,31 +1,9 @@
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { API_URL, CourseData } from "@/lib/constants";
-import { useAuthStore } from "@/hooks/useAuth";
+import { useCourse } from "@/hooks/useCourse";
 
 const Course = () => {
   const { courseId } = useParams();
-  const token = useAuthStore((state) => state.token);
-  
-  const { 
-    data: course,
-    isLoading,
-    isError,
-    error
-  } = useQuery({
-    queryKey: ['course', courseId],
-    queryFn: async () => {
-      const { data } = await axios.get(`${API_URL}/courses/${courseId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      });
-      
-      return data as CourseData;
-    },
-    enabled: !!courseId,
-  });
+  const { data: course, isLoading, isError, error } = useCourse(courseId);
 
   if (isLoading) {
     return <div>Loading course...</div>;
