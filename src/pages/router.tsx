@@ -7,6 +7,7 @@ import Layout from '@/components/Layout'
 import Course from './course/course'
 import { Students } from './course/students'
 import Attendance from './course/attendance'
+import { CourseCreate } from './course/course-create'
 
 function Router() {
   return (
@@ -19,6 +20,7 @@ function Router() {
            <Route path=":courseId" element={<Course />} />
            <Route path=":courseId/students" element={<Students />} />
            <Route path=":courseId/attendance" element={<Attendance />} />
+           <Route path="create" element={<CourseCreate />} />
       </Route>
       {/* <Route path="/courses/:courseId" element={<Layout />}>
           <Route index element={<Course />} />

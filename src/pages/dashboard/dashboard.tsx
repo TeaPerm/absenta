@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { CourseCard } from "@/components/course-card";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";    
 
 export function Dashboard() {
   const token = useAuthStore((state) => state.token);
@@ -14,7 +15,9 @@ export function Dashboard() {
     <Container className="py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Vezérlőpult</h1>
-        <Button>Kurzus hozzáadása</Button>
+        <Link to={`/${university}/create`}>
+          <Button>Kurzus hozzáadása</Button>
+        </Link>
       </div>
 
       {isLoading ? (
