@@ -1,12 +1,39 @@
-export default function Dashboard() {
+import { useCourses } from "@/hooks/useCourses";
+import { useAuthStore } from "@/hooks/useAuth";
+import { useParams } from "react-router-dom";
+import { CourseCard } from "@/components/course-card";
+import { Container } from "@/components/ui/container";
+import { Button } from "@/components/ui/button";
+
+export function Dashboard() {
+  const token = useAuthStore((state) => state.token);
+  const { university } = useParams();
+  const { data: courses, isLoading } = useCourses(university!, token);
+
   return (
-    <>
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
+    <Container className="py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">Vezérlőpult</h1>
+        <Button>Kurzus hozzáadása</Button>
       </div>
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-    </>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-64 animate-pulse bg-muted rounded-lg" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {courses?.map((course) => (
+            <CourseCard 
+              key={course._id} 
+              course={course} 
+              university={university!}
+            />
+          ))}
+        </div>
+      )}
+    </Container>
   );
 }

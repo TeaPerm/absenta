@@ -15,34 +15,19 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useQuery } from "@tanstack/react-query";
-import { API_URL, CourseData } from "@/lib/constants";
+
 import { useAuthStore } from "@/hooks/useAuth";
 import { Button } from "./ui/button";
 import { Link, useParams } from "react-router-dom";
+import { useCourses } from "@/hooks/useCourses";
 
 export function NavMain() {
   const token = useAuthStore((state) => state.token);
   const {university : selectedUniversity} = useParams();
 
-  const { data: courses, isLoading } = useQuery<[CourseData]>({
-    queryKey: [selectedUniversity],
-    queryFn: async () => {
-      const response = await fetch(
-        API_URL + `/auth/user/courses/${selectedUniversity}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const data = await response.json();
-      return data;
-    },
-  });
 
+  const { data: courses, isLoading } = useCourses(selectedUniversity, token);
+  
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="gap-2">
