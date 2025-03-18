@@ -9,7 +9,6 @@ import {
 import { useCourse } from "@/hooks/useCourse";
 import { useParams } from "react-router-dom";
 
-
 export function Students() {
   const { courseId } = useParams();
   const { data: course, isLoading, isError, error } = useCourse(courseId);

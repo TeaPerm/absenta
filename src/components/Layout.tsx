@@ -43,7 +43,6 @@ const generateBreadcrumbs = (pathname: string) => {
     })
     .filter(Boolean); // Remove null items
 
-  console.log(breadcrumbs);
   return breadcrumbs;
 };
 
