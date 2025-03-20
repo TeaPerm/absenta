@@ -23,7 +23,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
 import { useAuthStore } from "@/hooks/useAuth";
-import { Plus, Trash2 } from "lucide-react";;
+import { Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { API_URL } from "@/lib/constants";
 
@@ -36,6 +36,11 @@ const daysOfWeek = [
   "Saturday",
   "Sunday",
 ] as const;
+
+interface Student {
+  neptun_code: string;
+  name: string;
+}
 
 const courseCreateSchema = z
   .object({
@@ -108,7 +113,7 @@ export function CourseCreate() {
 
   return (
     <>
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-full mx-auto lg:mx-10 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Új kurzus létrehozása</h1>
           <p className="text-muted-foreground">
@@ -170,7 +175,7 @@ export function CourseCreate() {
                         <FormControl>
                           <InputOTP maxLength={5} {...field}>
                             <InputOTPGroup>
-                              <InputOTPSlot index={0} />
+                              <InputOTPSlot  index={0} />
                               <InputOTPSlot index={1} />
                               <span className="mx-1">:</span>
                               <InputOTPSlot index={2} />
@@ -238,25 +243,63 @@ export function CourseCreate() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <FormLabel>Tanulók</FormLabel>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => append({ neptun_code: "", name: "" })}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Tanuló hozzáadása
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        if (fields.length > 1) {
+                          remove(fields.length - 1);
+                        }
+                      }}
+                    >
+                      -
+                    </Button>
+                    <Input
+                      min={1}
+                      value={fields.length}
+                      onChange={(e) => {
+                        const newCount = Math.max(1, parseInt(e.target.value) || 1);
+                        const currentCount = fields.length;
+                        
+                        if (newCount === currentCount) return;
+                        
+                        if (newCount > currentCount) {
+                          // Add new fields
+                          const fieldsToAdd = newCount - currentCount;
+                          for (let i = 0; i < fieldsToAdd; i++) {
+                            append({ neptun_code: "", name: "" } as Student);
+                          }
+                        } else {
+                          // Remove fields
+                          const fieldsToRemove = currentCount - newCount;
+                          for (let i = 0; i < fieldsToRemove; i++) {
+                            remove(currentCount - 1 - i);
+                          }
+                        }
+                      }}
+                      className="w-20 text-center"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => append({ neptun_code: "", name: "" } as Student)}
+                    >
+                      +
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 ">
                   {fields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-1 gap-4 items-start p-4 border rounded-lg">
+                    <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg">
                       <FormField
                         control={form.control}
                         name={`students.${index}.neptun_code`}
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="flex-1">
                             <FormLabel>Neptun kód</FormLabel>
                             <FormControl>
                               <Input placeholder="ABC123" maxLength={6} {...field} />
@@ -270,7 +313,7 @@ export function CourseCreate() {
                         control={form.control}
                         name={`students.${index}.name`}
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="flex-1">
                             <FormLabel>Név</FormLabel>
                             <FormControl>
                               <Input placeholder="Tanuló neve" {...field} />
@@ -286,7 +329,7 @@ export function CourseCreate() {
                           variant="ghost"
                           size="icon"
                           onClick={() => remove(index)}
-                          className="self-end"
+                          className="flex justify-center mb-6"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

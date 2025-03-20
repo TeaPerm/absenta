@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { CourseData } from "@/lib/constants";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MoreVertical, MessageSquare, FileText, Folder } from "lucide-react";
 import { Button } from "./ui/button";
 
@@ -10,8 +10,11 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, university }: CourseCardProps) {
+
+  const navigate = useNavigate();
+
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden cursor-pointer" onClick={() => navigate(`/${university}/${course._id}`)}>
       <div className="relative">
         {/* Course color banner */}
         <div className="h-32 bg-purple-500" /> {/* We can make this dynamic based on course type */}

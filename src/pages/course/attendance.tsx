@@ -4,13 +4,18 @@ import { Container } from "@/components/ui/container";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
+import { useParams } from "react-router-dom";
+import { useCourse } from "@/hooks/useCourse";
 
-interface ProcessedData {
-  row_number: number;
-  student_name: string;
-  has_signature: boolean;
+interface Student {
+  name: string;
+  has_signed: boolean;
   confidence: number;
   pixel_density: number;
+}
+
+interface ProcessedData {
+  students: Student[];
 }
 
 const Attendance = () => {
@@ -19,10 +24,11 @@ const Attendance = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showResults, setShowResults] = useState(false);
-  const [processedData, setProcessedData] = useState<ProcessedData | null>(
-    null
-  );
+  const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const { courseId } = useParams();
+  const { data: course } = useCourse(courseId);
 
   const processImageMutation = useMutation({
     mutationFn: async (imageData: string) => {
@@ -46,9 +52,34 @@ const Attendance = () => {
       const blob = new Blob(byteArrays, { type: "image/jpeg" });
       const file = new File([blob], "image.jpg", { type: "image/jpeg" });
 
-      // Create FormData and append the file
+      // Create FormData and append both the file and names
       const formData = new FormData();
       formData.append("image", file);
+      formData.append("names", JSON.stringify(
+        course?.students.map(student => student.name) || []
+      ));
+      // formData.append("names", JSON.stringify([
+      //   "Abrisin Alen",
+      //   "Boros Botond",
+      //   "Consuegra-Sotolongo Gábor Luis",
+      //   "Csontos Dávid Ferenc",
+      //   "Dancs Kornél",
+      //   "Ferenczy Kata",
+      //   "Gombos Vidor Márton",
+      //   "Hanyecz Rebeka",
+      //   "Kelemen Kevin Tamás",
+      //   "Le Thien Nam",
+      //   "Mágó Szabolcs",
+      //   "Németh Dávid",
+      //   "Péter Dávid",
+      //   "Rakonczai Soma",
+      //   "Simon Raffael",
+      //   "Takács Máté",
+      //   "Tóth Izabella",
+      //   "Tóth Levente",
+      //   "Török Bálint Bence",
+      //   "Valtai Domonkos"
+      // ]));
 
       // Send the request with FormData
       const response = await axios.post(

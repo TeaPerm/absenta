@@ -16,4 +16,7 @@ export interface CourseData{
     name: string;
     university: string;
     students: [Student];
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
 }
