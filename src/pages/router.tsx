@@ -8,6 +8,7 @@ import Course from './course/course'
 import { Students } from './course/students'
 import Attendance from './course/attendance'
 import { CourseCreate } from './course/course-create'
+import AttendanceUpload from './course/attendance-upload'
 
 function Router() {
   return (
@@ -20,6 +21,7 @@ function Router() {
            <Route path=":courseId" element={<Course />} />
            <Route path=":courseId/students" element={<Students />} />
            <Route path=":courseId/attendance" element={<Attendance />} />
+           <Route path=":courseId/attendance/upload" element={<AttendanceUpload />} />
            <Route path="create" element={<CourseCreate />} />
       </Route>
       {/* <Route path="/courses/:courseId" element={<Layout />}>
