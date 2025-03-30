@@ -71,6 +71,12 @@ const Attendance = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Jelenléti lista</h1>
+          <Link to="upload">
+            <Button>
+              <Upload className="mr-2 h-4 w-4" />
+              Új jelenléti lista
+            </Button>
+          </Link>
         </div>
 
         <Table className="md:min-w-[600px]">

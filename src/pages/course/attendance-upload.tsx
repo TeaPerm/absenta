@@ -6,21 +6,27 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useParams } from "react-router-dom";
 import { useCourse } from "@/hooks/useCourse";
-
-interface Student {
-  name: string;
-  has_signed: boolean;
-  confidence: number;
-  pixel_density: number;
-}
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { hu } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { AttendanceData } from "@/lib/constants";
+import AttendanceTable from "@/components/attendance-table";
 
 interface ProcessedData {
-  students: Student[];
+  students: AttendanceData[];
 }
 
 const AttendanceUpload = () => {
   const [image, setImage] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [date, setDate] = useState<Date>(new Date());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showResults, setShowResults] = useState(false);
@@ -39,6 +45,7 @@ const AttendanceUpload = () => {
 
       for (let i = 0; i < byteCharacters.length; i += 512) {
         const slice = byteCharacters.slice(i, i + 512);
+        
         const byteNumbers = new Array(slice.length);
 
         for (let j = 0; j < slice.length; j++) {
@@ -56,29 +63,12 @@ const AttendanceUpload = () => {
       const formData = new FormData();
       formData.append("image", file);
       
-      // formData.append("names", JSON.stringify([
-      //   "Abrisin Alen",
-      //   "Boros Botond",
-      //   "Consuegra-Sotolongo Gábor Luis",
-      //   "Csontos Dávid Ferenc",
-      //   "Dancs Kornél",
-      //   "Ferenczy Kata",
-      //   "Gombos Vidor Márton",
-      //   "Hanyecz Rebeka",
-      //   "Kelemen Kevin Tamás",
-      //   "Le Thien Nam",
-      //   "Mágó Szabolcs",
-      //   "Németh Dávid",
-      //   "Péter Dávid",
-      //   "Rakonczai Soma",
-      //   "Simon Raffael",
-      //   "Takács Máté",
-      //   "Tóth Izabella",
-      //   "Tóth Levente",
-      //   "Török Bálint Bence",
-      //   "Valtai Domonkos"
-      // ]));
-
+      // Add student names to the request if we have course data
+      if (course?.students) {
+        const studentNames = course.students.map(student => student.name);
+        formData.append('names', JSON.stringify(studentNames));
+      }
+      
       // Send the request with FormData
       const response = await axios.post(
         "http://localhost:5000/process_table",
@@ -89,19 +79,29 @@ const AttendanceUpload = () => {
           },
         }
       );
+      console.log(formData);
       return response.data as ProcessedData;
     },
     onSuccess: (data) => {
-      toast.success("Image processed successfully");
-      console.log("Processed data:", data);
+      toast.success("Kép sikeresen feldolgozva");
+      console.log("Feldolgozott adat:", data);
       setProcessedData(data);
       setShowResults(true);
     },
     onError: (error) => {
-      toast.error("Failed to process image");
-      console.error("Error processing image:", error);
+      toast.error("Sikertelen képfeldolgozás");
+      console.error("Képfeldolgozási hiba:", error);
     },
   });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!image || !date) {
+      toast.error("Kérlek válassz dátumot és tölts fel egy képet");
+      return;
+    }
+    handleProcessImage();
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -157,25 +157,52 @@ const AttendanceUpload = () => {
   };
 
   return (
-    <>
-      <Container className="py-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <h1 className="text-2xl font-bold text-center">
-            Upload Attendance Sheet
-          </h1>
+    <Container className="py-8">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <h1 className="text-2xl font-bold text-center">
+          Jelenléti lista feltöltése
+        </h1>
 
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">Dátum</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "yyyy. MMMM d.", { locale: hu }) : <span>Válassz dátumot</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={(date) => date && setDate(date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
             {!isCameraActive ? (
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
+                    type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="flex-1"
                   >
-                    Upload from Device
+                    Feltöltés eszközről
                   </Button>
-                  <Button onClick={startCamera} className="flex-1">
-                    Take Photo
+                  <Button type="button" onClick={startCamera} className="flex-1">
+                    Fénykép készítése
                   </Button>
                 </div>
                 <input
@@ -195,15 +222,16 @@ const AttendanceUpload = () => {
                   className="w-full rounded-lg"
                 />
                 <div className="flex gap-4">
-                  <Button onClick={captureImage} className="flex-1">
-                    Capture
+                  <Button type="button" onClick={captureImage} className="flex-1">
+                    Fénykép készítése
                   </Button>
                   <Button
+                    type="button"
                     onClick={stopCamera}
                     variant="outline"
                     className="flex-1"
                   >
-                    Cancel
+                    Mégsem
                   </Button>
                 </div>
               </div>
@@ -220,34 +248,32 @@ const AttendanceUpload = () => {
                 </div>
                 <div className="flex gap-4">
                   <Button
-                    onClick={handleProcessImage}
+                    type="submit"
                     className="flex-1"
                     disabled={processImageMutation.isPending}
                   >
                     {processImageMutation.isPending
-                      ? "Processing..."
-                      : "Process Image"}
+                      ? "Feldolgozás folyamatban..."
+                      : "Kép feldolgozása"}
                   </Button>
                   <Button
+                    type="button"
                     onClick={() => setImage(null)}
                     variant="outline"
                     className="flex-1"
                   >
-                    Remove Image
+                    Kép törlése
                   </Button>
                 </div>
               </div>
             )}
           </div>
-        </div>
-      </Container>
+        </form>
+      </div>
       {showResults && (
-        <div>
-          <h1>Results</h1>
-          <pre>{JSON.stringify(processedData, null, 2)}</pre>
-        </div>
+        <AttendanceTable attendanceData={processedData?.students || []} />
       )}
-    </>
+    </Container>
   );
 };
 

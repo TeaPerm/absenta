@@ -6,12 +6,12 @@ export interface User {
     university: string[];
 }
 
-interface Student{
+interface Student {
     name: string;
     neptun_code: string;
 }
 
-export interface CourseData{
+export interface CourseData {
     _id: string;
     name: string;
     university: string;
@@ -19,4 +19,12 @@ export interface CourseData{
     dayOfWeek: string;
     startTime: string;
     endTime: string;
+}
+
+
+export interface AttendanceData {
+    name: string;
+    has_signed: boolean;
+    confidence: number;
+    pixel_density: number;
 }
