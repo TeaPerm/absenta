@@ -11,7 +11,7 @@ import { Container } from "@/components/ui/container";
 import { useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { hu } from "date-fns/locale";
-import { MoreVertical, Pencil, Trash2, Upload, Eye } from "lucide-react";
+import { MoreVertical, Trash2, Upload, Eye, FolderInput } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   DropdownMenu,
@@ -22,8 +22,11 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { API_URL } from "@/lib/constants";
+import { createExportName } from "@/lib/utils";
 import { useAuthStore } from "@/hooks/useAuth";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import * as XLSX from 'xlsx';
+import { useCourse } from "@/hooks/useCourse";
 
 interface AttendanceRecord {
   date: string;
@@ -31,7 +34,13 @@ interface AttendanceRecord {
   _id: string;
   attendanceImage: AttendanceImage;
   uploaded: boolean;
+  updatedAt: string;
   image?: string;
+  students?: Array<{
+    student_name: string;
+    neptun_code: string;
+    status: string;
+  }>;
 }
 
 interface AttendanceImage {
@@ -43,6 +52,8 @@ interface AttendanceImage {
 const Attendance = () => {
   const { courseId } = useParams();
   const token = useAuthStore((state) => state.token);
+  const course = useCourse(courseId);
+  const courseName = course.data?.name;
 
   const { data: attendances, isLoading: attendancesLoading } = useQuery({
     queryKey: ["attendances", courseId],
@@ -60,7 +71,42 @@ const Attendance = () => {
     enabled: !!courseId && !!token,
   });
 
-  console.log(attendances);
+  const handleExport = (record: AttendanceRecord) => {
+    if (!record.students || !courseName) return;
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(
+      record.students.map(student => ({
+        'Hallgató neve': student.student_name,
+        'Neptunkód': student.neptun_code,
+        'Jelenlét': student.status
+      }))
+    );
+
+    // Set column widths
+    const colWidths = [
+      { wch: 30 }, // Név
+      { wch: 15 }, // Neptun kód
+      { wch: 15 }, // Jelenlét
+    ];
+    ws['!cols'] = colWidths;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Jelenléti ív');
+
+    // Generate Excel file
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = createExportName(courseName, new Date(record.date));
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
 
   if (attendancesLoading) {
     return <div>Loading...</div>;
@@ -82,10 +128,11 @@ const Attendance = () => {
         <Table className="md:min-w-[600px]">
           <TableHeader>
             <TableRow className="text-center">
-              <TableHead>Dátum</TableHead>
-              <TableHead>Státusz</TableHead>
-              <TableHead>Kép</TableHead>
-              <TableHead className="text-center">Feltöltés</TableHead>
+              <TableHead className="text-center">Dátum</TableHead>
+              <TableHead className="text-center">Státusz</TableHead>
+              <TableHead className="text-center">Kép</TableHead>
+              <TableHead className="text-center">Feltöltés dátuma</TableHead>
+              <TableHead className="text-center">Műveletek</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -116,8 +163,13 @@ const Attendance = () => {
                           Megtekintés
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-3xl">
-                        <div className="aspect-[3/2] relative overflow-hidden rounded-lg">
+                      <DialogContent className="max-w-5xl">
+                        <DialogTitle>
+                          {format(new Date(record.date), "yyyy. MMMM d. HH:mm", {
+                            locale: hu,
+                          })}
+                        </DialogTitle>
+                        <div className="relative w-full h-[80vh] overflow-hidden rounded-lg border">
                           <img
                             src={`${API_URL}/attendance/image/${record.attendanceImage._id}`}
                             alt={record.attendanceImage.name}
@@ -129,15 +181,12 @@ const Attendance = () => {
                   )}
                 </TableCell>
                 <TableCell className="text-right">
+                  {format(new Date(record.updatedAt), "yyyy. MMMM d. HH:mm", {
+                    locale: hu,
+                  })}
+                </TableCell>
+                <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    {!record.status && (
-                      <Link to={`upload`}>
-                        <Button variant="outline" size="sm">
-                          <Upload className="mr-2 h-4 w-4" />
-                          Feltöltés
-                        </Button>
-                      </Link>
-                    )}
                     <DropdownMenu>
                       <DropdownMenuTrigger className="ml-4" asChild>
                         <Button variant="ghost" size="icon">
@@ -145,11 +194,14 @@ const Attendance = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          <span>Szerkesztés</span>
+                        <DropdownMenuItem 
+                          className="cursor-pointer hover:bg-primary/10"
+                          onClick={() => handleExport(record)}
+                        >
+                          <FolderInput className="mr-2 h-4 w-4" />
+                          <span>Exportálás</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-red-600 cursor-pointer hover:text-red-600/10">
                           <Trash2 className="mr-2 h-4 w-4" />
                           <span>Törlés</span>
                         </DropdownMenuItem>

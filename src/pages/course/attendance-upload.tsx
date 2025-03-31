@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AttendanceData } from "@/lib/constants";
 import AttendanceTable from "@/components/attendance-table";
+import { base64ToFile } from '@/lib/utils';
 
 interface ProcessedData {
   students: AttendanceData[];
@@ -38,28 +39,8 @@ const AttendanceUpload = () => {
 
   const processImageMutation = useMutation({
     mutationFn: async (imageData: string) => {
-      // Convert base64 to File object
-      const base64Data = imageData.split(",")[1];
-      const byteCharacters = atob(base64Data);
-      const byteArrays = [];
-
-      for (let i = 0; i < byteCharacters.length; i += 512) {
-        const slice = byteCharacters.slice(i, i + 512);
-        
-        const byteNumbers = new Array(slice.length);
-
-        for (let j = 0; j < slice.length; j++) {
-          byteNumbers[j] = slice.charCodeAt(j);
-        }
-
-        byteArrays.push(new Uint8Array(byteNumbers)); 
-      }
-
-      // Create a blob and then a File
-      const blob = new Blob(byteArrays, { type: "image/jpeg" });
-      const file = new File([blob], "image.jpg", { type: "image/jpeg" });
-
-      // Create FormData and append both the file and names
+      
+      const file = base64ToFile(imageData, "attendance.jpg", "image/jpeg");
       const formData = new FormData();
       formData.append("image", file);
       
@@ -158,7 +139,7 @@ const AttendanceUpload = () => {
 
   return (
     <Container className="py-8">
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-6 mb-8">
         <h1 className="text-2xl font-bold text-center">
           Jelenléti lista feltöltése
         </h1>
@@ -186,6 +167,7 @@ const AttendanceUpload = () => {
                     selected={date}
                     onSelect={(date) => date && setDate(date)}
                     initialFocus
+                    weekStartsOn={1}
                   />
                 </PopoverContent>
               </Popover>
@@ -271,7 +253,12 @@ const AttendanceUpload = () => {
         </form>
       </div>
       {showResults && (
-        <AttendanceTable attendanceData={processedData?.students || []} />
+        <AttendanceTable 
+          attendanceImage={image!}
+          attendanceData={processedData?.students || []} 
+          courseId={courseId!}
+          date={date}
+        />
       )}
     </Container>
   );
