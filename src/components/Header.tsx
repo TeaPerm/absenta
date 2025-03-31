@@ -49,6 +49,9 @@ function MobileNavLink(
 }
 
 export function Header() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useUser();
+
   return (
     <header>
       <nav>
@@ -113,10 +116,20 @@ export function Header() {
                             <MobileNavLink href="/#faqs">FAQs</MobileNavLink>
                           </div>
                           <div className="mt-8 flex flex-col gap-4">
-                            <Link to="/login">
-                              <Button variant="outline">Log in</Button>
-                            </Link>
-                            <Button>Download the app</Button>
+                            {isAuthenticated ? (
+                              <Link to={`${user?.university[0]}`}>
+                                <Button variant="outline" className="w-full">Vezérlőpult</Button>
+                              </Link>
+                            ) : (
+                              <>
+                                <Link to="/register">
+                                  <Button variant="outline" className="w-full">Regisztráció</Button>
+                                </Link>
+                                <Link to="/login">
+                                  <Button className="w-full">Belépés</Button>
+                                </Link>
+                              </>
+                            )}
                           </div>
                         </PopoverPanel>
                       </>

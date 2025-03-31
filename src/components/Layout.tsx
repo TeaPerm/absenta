@@ -14,8 +14,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/hooks/useAuth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useCourse } from "@/hooks/useCourse";
 
 // Function to generate breadcrumbs based on URL
 const generateBreadcrumbs = (pathname: string) => {
@@ -23,33 +24,63 @@ const generateBreadcrumbs = (pathname: string) => {
   const paths = pathname.replace(/^\/+/, "").split("/");
 
   // Create breadcrumb items
-  const breadcrumbs = paths
-    .map((path, index) => {
-      // Skip empty parts
-      if (!path) return null;
+  const breadcrumbs = paths.map((path, index) => {
+    // Skip empty parts
+    if (!path) return null;
 
-      // Create the URL for this breadcrumb
-      const url = `/${paths.slice(0, index + 1).join("/")}`;
+    // Create the URL for this breadcrumb
+    const url = `/${paths.slice(0, index + 1).join("/")}`;
 
-      // Determine if this is the last item (current page)
-      const isLast = index === paths.length - 1;
+    // Determine if this is the last item (current page)
+    const isLast = index === paths.length - 1;
 
-      // Format path for display (capitalize, replace dashes with spaces, etc.)
-      const formattedPath = path
-        .replace(/-/g, " ")
-        .replace(/^\w/, (c) => c.toUpperCase());
+    // Format path for display (capitalize, replace dashes with spaces, etc.)
+    const formattedPath = path
+      .replace(/-/g, " ")
+      .replace(/^\w/, (c) => c.toUpperCase());
 
-      return { path: formattedPath, url, isLast };
-    })
-    .filter(Boolean); // Remove null items
+    const translations: { [key: string]: string } = {
+      "students": "Hallgatók",
+      "attendance": "Jelenlét",
+      "upload": "Jelenlét feltöltése",
+    };
 
-  return breadcrumbs;
+    // Use translation if available, otherwise use formatted path
+    const translatedPath = translations[path] || formattedPath;
+
+    return { path: translatedPath, url, isLast };
+  });
+
+  return breadcrumbs.filter(Boolean);
 };
 
 // Breadcrumbs component
 const AppBreadcrumbs = () => {
   const location = useLocation();
-  const breadcrumbs = generateBreadcrumbs(location.pathname);
+  const paths = location.pathname.replace(/^\/+/, "").split("/");
+  const courseId = paths[1]; // The course ID is the second segment
+  const { data: course } = useCourse(courseId);
+  const [breadcrumbs, setBreadcrumbs] = useState<Array<{ path: string; url: string; isLast: boolean } | null>>([]);
+
+  useEffect(() => {
+    const crumbs = generateBreadcrumbs(location.pathname);
+    
+    // If we have course data, replace the course ID with the course name
+    if (course && crumbs) {
+      const updatedCrumbs = crumbs.map((crumb, index) => {
+        if (index === 1 && crumb) { // The course ID is at index 1
+          return {
+            ...crumb,
+            path: course.name
+          };
+        }
+        return crumb;
+      });
+      setBreadcrumbs(updatedCrumbs);
+    } else {
+      setBreadcrumbs(crumbs);
+    }
+  }, [location.pathname, course]);
 
   if (breadcrumbs.length < 1) {
     return null;
@@ -58,7 +89,7 @@ const AppBreadcrumbs = () => {
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {breadcrumbs.map((crumb, index) => (
+        {breadcrumbs.filter((crumb): crumb is { path: string; url: string; isLast: boolean } => crumb !== null).map((crumb, index) => (
           <div key={index} className="flex items-center">
             {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
             <BreadcrumbItem className="hidden md:block">

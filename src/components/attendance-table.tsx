@@ -7,21 +7,15 @@ import {
   TableHeader, 
   TableRow 
 } from './ui/table'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select'
 import { Button } from './ui/button'
 import { API_URL, AttendanceData } from '@/lib/constants'
-import { base64ToFile, cn } from '@/lib/utils'
+import { base64ToFile } from '@/lib/utils'
 import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
+import { AttendanceStatusSelect, AttendanceStatus } from './attendance-status-select'
 
 interface AttendanceTableProps {
   attendanceData: AttendanceData[]
@@ -30,38 +24,20 @@ interface AttendanceTableProps {
   attendanceImage: string
 }
 
-
 const AttendanceTable = ({ attendanceData, attendanceImage, courseId, date }: AttendanceTableProps) => {
-
   const navigate = useNavigate();
-
   const token = useAuthStore((state) => state.token);
-  const [attendance, setAttendance] = useState<{[key: string]: string}>(
+  const [attendance, setAttendance] = useState<{[key: string]: AttendanceStatus}>(
     Object.fromEntries(
       attendanceData.map(data => [data.name, data.has_signed ? "Megjelent" : "Nem jelent meg"])
     )
   )
 
-  const handleAttendanceChange = (name: string, value: string) => {
+  const handleAttendanceChange = (name: string, value: AttendanceStatus) => {
     setAttendance(prev => ({
       ...prev,
       [name]: value
     }))
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Megjelent":
-        return "bg-green-500 hover:bg-green-600 text-white"
-      case "Nem jelent meg":
-        return "bg-red-500 hover:bg-red-600 text-white"
-      case "Igazoltan távol":
-        return "bg-yellow-500 hover:bg-yellow-600 text-white"
-      case "Késett":
-        return "bg-gray-700 hover:bg-gray-700 text-white"
-      default:
-        return "bg-white hover:bg-gray-100"
-    }
   }
 
   const submitMutation = useMutation({
@@ -122,20 +98,10 @@ const AttendanceTable = ({ attendanceData, attendanceImage, courseId, date }: At
               <TableCell>{data.name}</TableCell>
               <TableCell>{data.confidence}%</TableCell>
               <TableCell>
-                <Select
+                <AttendanceStatusSelect
                   value={attendance[data.name]}
-                  onValueChange={(value) => handleAttendanceChange(data.name, value)}
-                >
-                  <SelectTrigger className={cn("w-[180px]", getStatusColor(attendance[data.name]), "[&_svg]:text-white")}>
-                    <SelectValue placeholder="Jelenlét" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Megjelent">Megjelent</SelectItem>
-                    <SelectItem value="Igazoltan távol">Igazoltan távol</SelectItem>
-                    <SelectItem value="Nem jelent meg">Nem jelent meg</SelectItem>
-                    <SelectItem value="Késett">Késett</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(value) => handleAttendanceChange(data.name, value)}
+                />
               </TableCell>
             </TableRow>
           ))}

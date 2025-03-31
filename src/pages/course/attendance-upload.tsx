@@ -141,7 +141,7 @@ const AttendanceUpload = () => {
     <Container className="py-8">
       <div className="max-w-2xl mx-auto space-y-6 mb-8">
         <h1 className="text-2xl font-bold text-center">
-          Jelenléti lista feltöltése
+          Jelenléti ív feltöltése
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
