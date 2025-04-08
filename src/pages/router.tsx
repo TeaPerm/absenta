@@ -10,6 +10,7 @@ import Attendance from './course/attendance'
 import { CourseCreate } from './course/course-create'
 import AttendanceUpload from './course/attendance-upload'
 import AttendanceView from './course/attendance-view'
+import CourseSettings from './course/course-settings'
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function Router() {
            <Route path=":courseId/attendance/upload" element={<AttendanceUpload />} />
            <Route path=":courseId/attendance/:attendanceId" element={<AttendanceView />} />
            <Route path="create" element={<CourseCreate />} />
+           <Route path=":courseId/settings" element={<CourseSettings />} />
       </Route>
       {/* <Route path="/courses/:courseId" element={<Layout />}>
           <Route index element={<Course />} />

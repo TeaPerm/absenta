@@ -16,6 +16,7 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import { AttendanceStatusSelect, AttendanceStatus } from './attendance-status-select'
+import { useCourse } from '@/hooks/useCourse'
 
 interface AttendanceTableProps {
   attendanceData: AttendanceData[]
@@ -27,6 +28,7 @@ interface AttendanceTableProps {
 const AttendanceTable = ({ attendanceData, attendanceImage, courseId, date }: AttendanceTableProps) => {
   const navigate = useNavigate();
   const token = useAuthStore((state) => state.token);
+  const course = useCourse(courseId);
   const [attendance, setAttendance] = useState<{[key: string]: AttendanceStatus}>(
     Object.fromEntries(
       attendanceData.map(data => [data.name, data.has_signed ? "Megjelent" : "Nem jelent meg"])
@@ -51,7 +53,7 @@ const AttendanceTable = ({ attendanceData, attendanceImage, courseId, date }: At
       formData.append("students", JSON.stringify(
         Object.entries(attendance).map(([name, status]) => ({
           student_name: name,
-          neptun_code: "ASDASD",
+          neptun_code: course.data?.students.find(student => student.name === name)?.neptun_code || "",
           status: status,
         }))
       ));

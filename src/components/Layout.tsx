@@ -43,6 +43,7 @@ const generateBreadcrumbs = (pathname: string) => {
       "students": "Hallgatók",
       "attendance": "Jelenlét",
       "upload": "Jelenlét feltöltése",
+      "settings": "Beállítások",
     };
 
     // Use translation if available, otherwise use formatted path

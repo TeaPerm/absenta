@@ -1,5 +1,79 @@
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
+import { FileText, Upload, Camera, Download } from "lucide-react";
+
+function Steps() {
+  return (
+    <div className="mt-24 lg:mt-32">
+      <h2 className="mt-8 text-4xl font-bold tracking-tight text-slate-900">
+        Négy egyszerű lépés a jelenléti ívek digitalizálásához
+      </h2>
+      <p className="mt-4 text-lg text-slate-600">
+        Alkalmazásunk egyszerűsíti a jelenléti adatok rögzítését és kezelését.
+      </p>
+
+      <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="group relative bg-slate-950 rounded-2xl p-6 hover:bg-slate-900 transition-colors">
+          <div className="flex w-full items-center justify-center">
+            <div className="flex items h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
+              <FileText className="h-6 w-6" />
+            </div>
+          </div>
+          <h3 className="mt-4 text-xl font-semibold text-white">
+            1. Névsor generálás
+          </h3>
+          <p className="mt-2 text-slate-400">
+            Töltse fel a hallgatói névsort és generáljon nyomtatható sablonokat.
+          </p>
+        </div>
+
+        <div className="group relative bg-slate-950 rounded-2xl p-6 hover:bg-slate-900 transition-colors">
+          <div className="flex w-full items-center justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
+              <Upload className="h-6 w-6" />
+            </div>
+          </div>
+          <h3 className="mt-4 text-xl font-semibold text-white">
+            2. Adatgyűjtés
+          </h3>
+          <p className="mt-2 text-slate-400">
+            A hallgatók aláírják a kinyomtatott jelenléti ívet.
+          </p>
+        </div>
+
+        <div className="group relative bg-slate-950 rounded-2xl p-6 hover:bg-slate-900 transition-colors">
+          <div className="flex w-full items-center justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
+              <Camera className="h-6 w-6" />
+            </div>
+          </div>
+          <h3 className="mt-4 text-xl font-semibold text-white">
+            3. Képfeldolgozás
+          </h3>
+          <p className="mt-2 text-slate-400">
+            Készítsen fényképet az aláírt ívről, és algoritmusunk felismeri az
+            aláírásokat.
+          </p>
+        </div>
+
+        <div className="group relative bg-slate-950 rounded-2xl p-6 hover:bg-slate-900 transition-colors">
+          <div className="flex w-full items-center justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white">
+              <Download className="h-6 w-6" />
+            </div>
+          </div>
+          <h3 className="mt-4 text-xl font-semibold text-white">
+            4. Adatexportálás
+          </h3>
+          <p className="mt-2 text-slate-400">
+            Exportálja a jelenléti adatokat az egyetemi rendszerekkel
+            kompatibilis formátumban.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function Hero() {
   return (
@@ -23,7 +97,7 @@ export function Hero() {
         Csak le kell fényképeznie a jelenléti ívet, a többit mi megoldjuk.
       </p>
       <div className="mt-10 flex justify-center gap-x-6">
-        <Button>Get 6 months free</Button>
+        <Button>6 hónap ingyen</Button>
         <Button variant="outline">
           <svg
             aria-hidden="true"
@@ -31,9 +105,11 @@ export function Hero() {
           >
             <path d="m9.997 6.91-7.583 3.447A1 1 0 0 1 1 9.447V2.553a1 1 0 0 1 1.414-.91L9.997 5.09c.782.355.782 1.465 0 1.82Z" />
           </svg>
-          <span className="ml-3">Watch video</span>
+          <span className="ml-3">Videó megtekintése</span>
         </Button>
       </div>
+
+      <Steps />
     </Container>
   );
 }

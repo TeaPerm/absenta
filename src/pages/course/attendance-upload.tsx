@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { useMutation } from "@tanstack/react-query";
@@ -33,6 +33,7 @@ const AttendanceUpload = () => {
   const [showResults, setShowResults] = useState(false);
   const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [progress, setProgress] = useState(0);
 
   const { courseId } = useParams();
   const { data: course } = useCourse(courseId);
@@ -74,6 +75,30 @@ const AttendanceUpload = () => {
       console.error("Képfeldolgozási hiba:", error);
     },
   });
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (processImageMutation.isPending && progress < 95) {
+      interval = setInterval(() => {
+        setProgress(prev => {
+          // Increase speed based on current progress
+          if (prev < 30) return prev + 2;
+          if (prev < 60) return prev + 1;
+          if (prev < 90) return prev + 0.5;
+          return prev + 0.2;
+        });
+      }, 200);
+    }
+
+    if (!processImageMutation.isPending) {
+      setProgress(0);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [processImageMutation.isPending, progress]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -235,7 +260,7 @@ const AttendanceUpload = () => {
                     disabled={processImageMutation.isPending}
                   >
                     {processImageMutation.isPending
-                      ? "Feldolgozás folyamatban..."
+                      ? `Feldolgozás folyamatban... ${Math.min(Math.round(progress), 99)}%`
                       : "Kép feldolgozása"}
                   </Button>
                   <Button
@@ -252,7 +277,7 @@ const AttendanceUpload = () => {
           </div>
         </form>
       </div>
-      {showResults && (
+      {showResults && image &&  (
         <AttendanceTable 
           attendanceImage={image!}
           attendanceData={processedData?.students || []} 

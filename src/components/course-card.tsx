@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { CourseData } from "@/lib/constants";
 import { Link, useNavigate } from "react-router-dom";
-import { MoreVertical, MessageSquare, FileText, Folder } from "lucide-react";
+import { TableOfContents, Users, NotebookText, Settings } from "lucide-react";
 import { Button } from "./ui/button";
 
 interface CourseCardProps {
@@ -10,47 +10,44 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, university }: CourseCardProps) {
-
   const navigate = useNavigate();
 
   return (
-    <Card className="overflow-hidden cursor-pointer" onClick={() => navigate(`/${university}/${course._id}`)}>
+    <Card className="overflow-hidden">
       <div className="relative">
         {/* Course color banner */}
-        <div className="h-32 bg-purple-500" /> {/* We can make this dynamic based on course type */}
-        
-        {/* More options button */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute top-2 right-2"
-        >
-          <MoreVertical className="h-5 w-5" />
-        </Button>
+        <div className="h-32 bg-purple-500" />
       </div>
 
       <div className="p-4 space-y-4">
         {/* Course title and date */}
-        <div>
+        <div 
+          onClick={() => navigate(`/${university}/${course._id}`)}
+          className="cursor-pointer hover:text-blue-600 transition-colors"
+        >
           <h3 className="font-semibold text-lg">{course.name}</h3>
-          <p className="text-sm text-muted-foreground">2024/25/1</p>
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-4">
+        <div className="flex gap-4" onClick={(e) => e.stopPropagation()}>
           <Link to={`/${university}/${course._id}`}>
-            <Button variant="ghost" size="icon">
-              <MessageSquare className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="hover:bg-slate-100">
+              <TableOfContents className="h-5 w-5" />
+            </Button>
+          </Link>
+          <Link to={`/${university}/${course._id}/students`}>
+            <Button variant="ghost" size="icon" className="hover:bg-slate-100">
+              <Users className="h-5 w-5" />
             </Button>
           </Link>
           <Link to={`/${university}/${course._id}/attendance`}>
-            <Button variant="ghost" size="icon">
-              <FileText className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="hover:bg-slate-100">
+              <NotebookText className="h-5 w-5" />
             </Button>
           </Link>
-          <Link to={`/${university}/${course._id}/files`}>
-            <Button variant="ghost" size="icon">
-              <Folder className="h-5 w-5" />
+          <Link to={`/${university}/${course._id}/settings`}>
+            <Button variant="ghost" size="icon" className="hover:bg-slate-100">
+              <Settings className="h-5 w-5" />
             </Button>
           </Link>
         </div>

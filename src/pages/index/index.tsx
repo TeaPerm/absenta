@@ -1,6 +1,5 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
-import { PrimaryFeatures } from "@/components/PrimaryFeatures";
 
 const index = () => {
 
@@ -10,7 +9,6 @@ const index = () => {
       <Header />
       <main>
         <Hero />
-        <PrimaryFeatures />
       </main>
     </>
   );

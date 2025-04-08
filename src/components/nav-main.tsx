@@ -87,18 +87,18 @@ export function NavMain() {
 const sidebarMenuSubitems = [
   {
     title: "Kezdőlap",
-    url: "", // This will route to /courses/:courseId
+    url: "", 
   },
   {
     title: "Tanulók",
-    url: "/students", // This will route to /courses/:courseId/students
+    url: "/students", 
   },
   {
     title: "Jelenléti ívek",
-    url: "/attendance", // This will route to /courses/:courseId/attendance
+    url: "/attendance", 
   },
   {
     title: "Beállítások",
-    url: "/settings", // This will route to /courses/:courseId/settings
+    url: "/settings", 
   },
 ];
