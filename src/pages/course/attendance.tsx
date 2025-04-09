@@ -33,6 +33,7 @@ import { PrintableAttendance } from "@/components/printable-attendance";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface AttendanceRecord {
   date: string;
@@ -64,10 +65,10 @@ const Attendance = () => {
   const course = useCourse(courseId);
   const courseName = course.data?.name;
   const students = course.data?.students || [];
-  const startTime = course.data?.startTime || "00:00";
-  const endTime = course.data?.endTime || "24:00";
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [selectedPrintDate, setSelectedPrintDate] = useState<Date>(new Date());
+  const [selectedPrintStartTime, setSelectedPrintStartTime] = useState<{ hours: string; minutes: string }>({ hours: '', minutes: '' });
+  const [selectedPrintEndTime, setSelectedPrintEndTime] = useState<{ hours: string; minutes: string }>({ hours: '', minutes: '' });
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const { data: attendances, isLoading: attendancesLoading } = useQuery({
@@ -156,6 +157,12 @@ const Attendance = () => {
   };
 
   const handlePrintConfirm = () => {
+    const printDate = new Date(selectedPrintDate);
+    if (selectedPrintStartTime.hours && selectedPrintStartTime.minutes) {
+      printDate.setHours(parseInt(selectedPrintStartTime.hours));
+      printDate.setMinutes(parseInt(selectedPrintStartTime.minutes));
+    }
+    
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(`
@@ -275,7 +282,7 @@ const Attendance = () => {
                   <TableRow key={record._id}>
                     <TableCell className="font-medium">
                       <span className="hidden sm:inline">
-                        {format(new Date(record.date), "yyyy. MMMM d. HH:mm", {
+                        {format(new Date(record.date), "yyyy. MMMM d.", {
                           locale: hu,
                         })}
                       </span>
@@ -307,7 +314,7 @@ const Attendance = () => {
                           </DialogTrigger>
                           <DialogContent className="max-w-5xl">
                             <DialogTitle>
-                              {format(new Date(record.date), "yyyy. MMMM d. HH:mm", {
+                              {format(new Date(record.date), "yyyy. MMMM d.", {
                                 locale: hu,
                               })}
                             </DialogTitle>
@@ -402,7 +409,7 @@ const Attendance = () => {
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 flex" align="start">
                 <Calendar
                   mode="single"
                   selected={selectedPrintDate}
@@ -416,6 +423,85 @@ const Attendance = () => {
                 />
               </PopoverContent>
             </Popover>
+            
+            <div className="flex flex-col justify-center gap-4 w-full items-center">
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium">Kezdési időpont</span>
+                <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="23"
+                      placeholder="Óra"
+                      className="w-20"
+                      value={selectedPrintStartTime.hours}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 23)) {
+                          setSelectedPrintStartTime(prev => ({ ...prev, hours: value }));
+                        }
+                      }}
+                    />
+                    <span>:</span>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      placeholder="Perc"
+                      className="w-20"
+                      value={selectedPrintStartTime.minutes}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 59)) {
+                          setSelectedPrintStartTime(prev => ({ ...prev, minutes: value }));
+                        }
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground">(opcionális)</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium">Befejezési időpont</span>
+                <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="23"
+                      placeholder="Óra"
+                      className="w-20"
+                      value={selectedPrintEndTime.hours}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 23)) {
+                          setSelectedPrintEndTime(prev => ({ ...prev, hours: value }));
+                        }
+                      }}
+                    />
+                    <span>:</span>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      placeholder="Perc"
+                      className="w-20"
+                      value={selectedPrintEndTime.minutes}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 59)) {
+                          setSelectedPrintEndTime(prev => ({ ...prev, minutes: value }));
+                        }
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm text-muted-foreground">(opcionális)</span>
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button onClick={handlePrintConfirm} className="w-full sm:w-auto">Nyomtatás</Button>
               <Button variant="outline" onClick={() => setPrintDialogOpen(false)} className="w-full sm:w-auto">
@@ -432,8 +518,12 @@ const Attendance = () => {
           students={students}
           courseName={courseName || ""}
           date={selectedPrintDate}
-          startTime={startTime}
-          endTime={endTime}
+          startTime={selectedPrintStartTime.hours && selectedPrintStartTime.minutes ? 
+            `${selectedPrintStartTime.hours.padStart(2, '0')}:${selectedPrintStartTime.minutes.padStart(2, '0')}` : 
+            undefined}
+          endTime={selectedPrintEndTime.hours && selectedPrintEndTime.minutes ? 
+            `${selectedPrintEndTime.hours.padStart(2, '0')}:${selectedPrintEndTime.minutes.padStart(2, '0')}` : 
+            undefined}
         />
       </div>
     </Container>

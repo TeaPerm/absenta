@@ -10,7 +10,7 @@ import Attendance from './course/attendance'
 import { CourseCreate } from './course/course-create'
 import AttendanceUpload from './course/attendance-upload'
 import AttendanceView from './course/attendance-view'
-import CourseSettings from './course/course-settings'
+import { CourseSettings } from './course/course-settings'
 
 function Router() {
   return (

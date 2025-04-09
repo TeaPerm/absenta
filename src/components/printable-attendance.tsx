@@ -10,8 +10,8 @@ interface PrintableAttendanceProps {
   students: Student[];
   courseName: string;
   date: Date;
-  startTime: string;
-  endTime: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 export function PrintableAttendance({ students, courseName, date, startTime, endTime }: PrintableAttendanceProps) {
@@ -22,9 +22,14 @@ export function PrintableAttendance({ students, courseName, date, startTime, end
           <h1 className="text-xl font-bold">{courseName}</h1>
           <p className="text-base">
             {format(date, "yyyy. MMMM d.", { locale: hu })}
-            {startTime} - {endTime}
+            {(startTime || endTime) && (
+              <span className="ml-2">
+                {startTime && <span>{startTime}</span>}
+                {startTime && endTime && <span> - </span>}
+                {endTime && <span>{endTime}</span>}
+              </span>
+            )}
           </p>
-
         </div>
 
         <table className="w-full border-collapse border-2 border-black print:border-2 print:border-black">

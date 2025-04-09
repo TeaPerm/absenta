@@ -44,6 +44,7 @@ const generateBreadcrumbs = (pathname: string) => {
       "attendance": "Jelenlét",
       "upload": "Jelenlét feltöltése",
       "settings": "Beállítások",
+      "create": "Új kurzus létrehozása"
     };
 
     // Use translation if available, otherwise use formatted path
@@ -60,14 +61,15 @@ const AppBreadcrumbs = () => {
   const location = useLocation();
   const paths = location.pathname.replace(/^\/+/, "").split("/");
   const courseId = paths[1]; // The course ID is the second segment
-  const { data: course } = useCourse(courseId);
+  const isCreatePage = paths.includes("create");
+  const { data: course } = useCourse(isCreatePage ? undefined : courseId);
   const [breadcrumbs, setBreadcrumbs] = useState<Array<{ path: string; url: string; isLast: boolean } | null>>([]);
 
   useEffect(() => {
     const crumbs = generateBreadcrumbs(location.pathname);
     
-    // If we have course data, replace the course ID with the course name
-    if (course && crumbs) {
+    // If we have course data and we're not on the create page, replace the course ID with the course name
+    if (course && crumbs && !isCreatePage) {
       const updatedCrumbs = crumbs.map((crumb, index) => {
         if (index === 1 && crumb) { // The course ID is at index 1
           return {
@@ -81,7 +83,7 @@ const AppBreadcrumbs = () => {
     } else {
       setBreadcrumbs(crumbs);
     }
-  }, [location.pathname, course]);
+  }, [location.pathname, course, isCreatePage]);
 
   if (breadcrumbs.length < 1) {
     return null;
