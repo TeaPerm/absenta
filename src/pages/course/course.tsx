@@ -6,27 +6,34 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { API_URL } from "@/lib/constants";
 import { useAuthStore } from "@/hooks/useAuth";
-import
- { 
-  Users, 
-  Calendar, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  Users,
+  Calendar,
+  CheckCircle,
+  XCircle,
+  Clock,
   FileText,
-  BarChart3
+  BarChart3,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 interface CourseStats {
   courseName: string;
@@ -88,20 +95,19 @@ const Course = () => {
   const { data: courseStats, isLoading: statsLoading } = useQuery<CourseStats>({
     queryKey: ["courseStats", courseId],
     queryFn: async () => {
-      const response = await axios.get(
-        `${API_URL}/courses/${courseId}/stats`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${API_URL}/courses/${courseId}/stats`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response.data;
     },
     enabled: !!courseId && !!token,
   });
 
-  const { data: attendances, isLoading: attendancesLoading } = useQuery<Attendance[]>({
+  const { data: attendances, isLoading: attendancesLoading } = useQuery<
+    Attendance[]
+  >({
     queryKey: ["attendances", courseId],
     queryFn: async () => {
       const response = await axios.get(
@@ -118,11 +124,15 @@ const Course = () => {
   });
 
   if (isLoading || statsLoading || attendancesLoading) {
-    return <div className="flex items-center justify-center h-full">Betöltés...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">Betöltés...</div>
+    );
   }
 
   if (isError) {
-    return <div>Hiba történt a kurzus betöltésekor: {(error as Error).message}</div>;
+    return (
+      <div>Hiba történt a kurzus betöltésekor: {(error as Error).message}</div>
+    );
   }
 
   if (!course) {
@@ -130,33 +140,60 @@ const Course = () => {
   }
 
   // Calculate overall attendance rate
-  const attendanceRate = courseStats ? 
-    courseStats.students.reduce((acc, student) => {
-      const total = student.attended + student.missed + student.late + student.excused;
-      return total > 0 ? acc + (student.attended / total) * 100 : acc;
-    }, 0) / (courseStats.students.length || 1) : 0;
+  const attendanceRate = courseStats
+    ? courseStats.students.reduce((acc, student) => {
+        const total =
+          student.attended + student.missed + student.late + student.excused;
+        return total > 0 ? acc + (student.attended / total) * 100 : acc;
+      }, 0) / (courseStats.students.length || 1)
+    : 0;
 
   // Calculate total students
   const totalStudents = course.students.length;
 
   // Get top 5 students by attendance
-  const topStudents = courseStats ? 
-    [...courseStats.students]
-      .sort((a, b) => {
-        const aTotal = a.attended + a.missed + a.late + a.excused;
-        const bTotal = b.attended + b.missed + b.late + b.excused;
-        const aRate = aTotal > 0 ? a.attended / aTotal : 0;
-        const bRate = bTotal > 0 ? b.attended / bTotal : 0;
-        return bRate - aRate;
-      })
-      .slice(0, 5) : [];
+  const topStudents = courseStats
+    ? [...courseStats.students]
+        .sort((a, b) => {
+          const aTotal = a.attended + a.missed + a.late + a.excused;
+          const bTotal = b.attended + b.missed + b.late + b.excused;
+          const aRate = aTotal > 0 ? a.attended / aTotal : 0;
+          const bRate = bTotal > 0 ? b.attended / bTotal : 0;
+          return bRate - aRate;
+        })
+        .slice(0, 5)
+    : [];
 
   // Get students with 3 or more missed attendances (top 5)
-  const studentsWithThreeOrMoreAbsences = courseStats ? 
-    [...courseStats.students]
-      .filter(student => student.missed >= 3)
-      .sort((a, b) => b.missed - a.missed)
-      .slice(0, 5) : [];
+  const studentsWithThreeOrMoreAbsences = courseStats
+    ? [...courseStats.students]
+        .filter((student) => student.missed >= 3)
+        .sort((a, b) => b.missed - a.missed)
+        .slice(0, 5)
+    : [];
+
+  // Process attendance data for the chart
+  const attendanceChartData = attendances
+    ? [...attendances]
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .map((attendance) => {
+          const attendedCount = attendance.students.filter(
+            (student) => student.status === "Megjelent"
+          ).length;
+          const missedCount = attendance.students.filter(
+            (student) => student.status === "Nem jelent meg"
+          ).length;
+          return {
+            date: new Date(attendance.date).toLocaleDateString("hu-HU", {
+              month: "short",
+              day: "numeric",
+            }),
+            attended: attendedCount,
+            missed: missedCount,
+            total: attendance.students.length,
+          };
+        })
+    : [];
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -172,7 +209,9 @@ const Course = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Összes hallgató</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Összes hallgató
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -188,38 +227,100 @@ const Course = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{courseStats?.totalSessions || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Összes jelenléti ív
-            </p>
+            <div className="text-2xl font-bold">
+              {courseStats?.totalSessions || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">Összes jelenléti ív</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Jelenléti arány</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Jelenléti arány
+            </CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{attendanceRate.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">
+              {attendanceRate.toFixed(1)}%
+            </div>
             <Progress value={attendanceRate} className="mt-2" />
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Jelenléti státusz</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Jelenléti státusz
+            </CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {attendanceRate >= 75 ? "Jó" : attendanceRate >= 50 ? "Közepes" : "Gyenge"}
+              {attendanceRate >= 75
+                ? "Jó"
+                : attendanceRate >= 50
+                ? "Közepes"
+                : "Gyenge"}
             </div>
             <p className="text-xs text-muted-foreground">
-              {attendanceRate >= 75 ? "Több mint 75% jelenlét" : 
-               attendanceRate >= 50 ? "50-75% jelenlét" : "Kevesebb mint 50% jelenlét"}
+              {attendanceRate >= 75
+                ? "Több mint 75% jelenlét"
+                : attendanceRate >= 50
+                ? "50-75% jelenlét"
+                : "Kevesebb mint 50% jelenlét"}
             </p>
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Jelenléti trend</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {attendanceChartData.length > 0 ? (
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={attendanceChartData}
+                  margin={{
+                    top: 10,
+                    right: 30,
+                    left: 0,
+                    bottom: 0,
+                  }}
+                >
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area
+                    type="natural"
+                    dataKey="attended"
+                    name="Megjelent"
+                    stroke="#22c55e"
+                    fill="#dcfce7"
+                    fillOpacity={0.8}
+                  />
+                  <Area
+                    type="natural"
+                    dataKey="missed"
+                    name="Nem jelent meg"
+                    stroke="#ef4444"
+                    fill="#fee2e2"
+                    fillOpacity={0.5}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                Nincs elég adat a trend megjelenítéséhez.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Tabs for different views */}
       <Tabs defaultValue="overview" className="space-y-4">
@@ -228,7 +329,7 @@ const Course = () => {
           <TabsTrigger value="students">Hallgatók</TabsTrigger>
           <TabsTrigger value="attendance">Jelenlét</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
@@ -245,11 +346,18 @@ const Course = () => {
                   </TableHeader>
                   <TableBody>
                     {topStudents.map((student) => {
-                      const total = student.attended + student.missed + student.late + student.excused;
-                      const rate = total > 0 ? (student.attended / total) * 100 : 0;
+                      const total =
+                        student.attended +
+                        student.missed +
+                        student.late +
+                        student.excused;
+                      const rate =
+                        total > 0 ? (student.attended / total) * 100 : 0;
                       return (
                         <TableRow key={student.neptun_code}>
-                          <TableCell className="font-medium">{student.student_name}</TableCell>
+                          <TableCell className="font-medium">
+                            {student.student_name}
+                          </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               <span>{rate.toFixed(1)}%</span>
@@ -263,7 +371,6 @@ const Course = () => {
                 </Table>
               </CardContent>
             </Card>
-          
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -286,11 +393,20 @@ const Course = () => {
                     <TableBody>
                       {studentsWithThreeOrMoreAbsences.map((student) => (
                         <TableRow key={student.neptun_code}>
-                          <TableCell className="font-medium">{student.student_name}</TableCell>
+                          <TableCell className="font-medium">
+                            {student.student_name}
+                          </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
                               <span>{student.missed}</span>
-                              <Progress value={(student.missed / (courseStats?.totalSessions || 1)) * 100} className="w-20" />
+                              <Progress
+                                value={
+                                  (student.missed /
+                                    (courseStats?.totalSessions || 1)) *
+                                  100
+                                }
+                                className="w-20 "
+                              />
                             </div>
                           </TableCell>
                         </TableRow>
@@ -299,13 +415,16 @@ const Course = () => {
                   </Table>
                 ) : (
                   <div className="text-center py-4">
-                    <p className="text-muted-foreground">Nincs olyan hallgató, aki 3 vagy több alkalommal hiányzott volna.</p>
+                    <p className="text-muted-foreground">
+                      Nincs olyan hallgató, aki 3 vagy több alkalommal hiányzott
+                      volna.
+                    </p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </div>
-          
+
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Jelenléti statisztikák</CardTitle>
@@ -315,28 +434,40 @@ const Course = () => {
                 <div className="flex flex-col items-center p-4 bg-green-50 rounded-lg">
                   <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
                   <div className="text-2xl font-bold text-green-600">
-                    {courseStats?.students.reduce((acc, student) => acc + student.attended, 0) || 0}
+                    {courseStats?.students.reduce(
+                      (acc, student) => acc + student.attended,
+                      0
+                    ) || 0}
                   </div>
                   <div className="text-sm text-green-600">Megjelent</div>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-red-50 rounded-lg">
                   <XCircle className="h-8 w-8 text-red-600 mb-2" />
                   <div className="text-2xl font-bold text-red-600">
-                    {courseStats?.students.reduce((acc, student) => acc + student.missed, 0) || 0}
+                    {courseStats?.students.reduce(
+                      (acc, student) => acc + student.missed,
+                      0
+                    ) || 0}
                   </div>
                   <div className="text-sm text-red-600">Nem jelent meg</div>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-yellow-50 rounded-lg">
                   <Clock className="h-8 w-8 text-yellow-600 mb-2" />
                   <div className="text-2xl font-bold text-yellow-600">
-                    {courseStats?.students.reduce((acc, student) => acc + student.late, 0) || 0}
+                    {courseStats?.students.reduce(
+                      (acc, student) => acc + student.late,
+                      0
+                    ) || 0}
                   </div>
                   <div className="text-sm text-yellow-600">Késett</div>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-blue-50 rounded-lg">
                   <FileText className="h-8 w-8 text-blue-600 mb-2" />
                   <div className="text-2xl font-bold text-blue-600">
-                    {courseStats?.students.reduce((acc, student) => acc + student.excused, 0) || 0}
+                    {courseStats?.students.reduce(
+                      (acc, student) => acc + student.excused,
+                      0
+                    ) || 0}
                   </div>
                   <div className="text-sm text-blue-600">Igazoltan távol</div>
                 </div>
@@ -344,7 +475,7 @@ const Course = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="students" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -376,7 +507,7 @@ const Course = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="attendance" className="space-y-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -396,11 +527,14 @@ const Course = () => {
                     <Card key={attendance._id}>
                       <CardHeader>
                         <CardTitle className="text-lg">
-                          {new Date(attendance.date).toLocaleDateString('hu-HU', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })}
+                          {new Date(attendance.date).toLocaleDateString(
+                            "hu-HU",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -417,13 +551,17 @@ const Course = () => {
                               {attendance.students.map((student) => (
                                 <TableRow key={student._id}>
                                   <TableCell>{student.student_name}</TableCell>
-                                  <TableCell className="font-mono">{student.neptun_code}</TableCell>
+                                  <TableCell className="font-mono">
+                                    {student.neptun_code}
+                                  </TableCell>
                                   <TableCell>
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                      student.status === 'Megjelent' 
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
-                                    }`}>
+                                    <span
+                                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        student.status === "Megjelent"
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-red-100 text-red-800"
+                                      }`}
+                                    >
                                       {student.status}
                                     </span>
                                   </TableCell>
@@ -438,14 +576,14 @@ const Course = () => {
                 ) : (
                   <div className="text-center py-8">
                     <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium">Nincsenek jelenléti ívek</h3>
+                    <h3 className="text-lg font-medium">
+                      Nincsenek jelenléti ívek
+                    </h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       Még nem lett feltöltve jelenléti ív ehhez a kurzushoz.
                     </p>
                     <Link to="attendance">
-                      <Button>
-                        Jelenléti ív létrehozása
-                      </Button>
+                      <Button>Jelenléti ív létrehozása</Button>
                     </Link>
                   </div>
                 )}

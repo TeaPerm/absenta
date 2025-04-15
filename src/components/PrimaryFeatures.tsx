@@ -11,27 +11,27 @@ import screenshotVatReturns from '@/assets/vat-returns.png'
 
 const features = [
   {
-    title: 'Payroll',
+    title: 'Névsor generálás',
     description:
-      "Keep track of everyone's salaries and whether or not they've been paid. Direct deposit not supported.",
+      'Digitalizálja a hallgatói névsorokat pillanatok alatt! A felhasználóbarát felületen könnyedén importálhat meglévő listákat vagy adhat hozzá új hallgatókat. Az Absenta automatikusan ellenőrzi a Neptun-kódok helyességét és rendszerezi a kurzus résztvevőit.',
     image: screenshotPayroll,
   },
   {
-    title: 'Claim expenses',
+    title: 'Jelenléti ív feldolgozás',
     description:
-      "All of your receipts organized into one place, as long as you don't mind typing in the data by hand.",
+      'Forradalmi AI technológiánk felismeri a kézírásos aláírásokat és automatikusan rögzíti a jelenléti adatokat. Nincs többé órákig tartó manuális adatbevitel – egyszerűen készítsen egy fotót a papíralapú jelenléti ívről, és az Absenta elvégzi a munkát Ön helyett.',
     image: screenshotExpenses,
   },
   {
-    title: 'VAT handling',
+    title: 'Valós idejű jelenlét követés',
     description:
-      "We only sell our software to companies who don't deal with VAT at all, so technically we do all the VAT stuff they need.",
+      'Növelje a hatékonyságot a helyszíni jelenlét-kezeléssel! Használja mobileszközét a bármikor, bárhonnan elérhető rendszerben, jelölje meg egy érintéssel a megjelent, késő vagy hiányzó hallgatókat. A változások azonnal szinkronizálódnak a felhőalapú adatbázissal.',
     image: screenshotVatReturns,
   },
   {
-    title: 'Reporting',
+    title: 'Átfogó statisztikák és jelentések',
     description:
-      'Easily export your data into an Excel spreadsheet where you can do whatever the hell you want with it.',
+      'Fedezze fel az adatokban rejlő mintázatokat interaktív grafikonokkal és részletes kimutatásokkal! Az Absenta vizuálisan jeleníti meg a részvételi trendeket, automatikus figyelmeztetéseket küld a kritikus hiányzásokról, és a jelentéseket egyetlen kattintással exportálhatja különböző formátumokba.',
     image: screenshotReporting,
   },
 ]
@@ -59,7 +59,7 @@ export function PrimaryFeatures() {
   return (
     <section
       id="features"
-      aria-label="Features for running your books"
+      aria-label="Fő funkciók"
       className="relative overflow-hidden bg-blue-600 pt-20 pb-28 sm:py-32"
     >
       <img
@@ -72,11 +72,10 @@ export function PrimaryFeatures() {
       <Container className="relative">
         <div className="max-w-2xl md:mx-auto md:text-center xl:max-w-none">
           <h2 className="font-display text-3xl tracking-tight text-white sm:text-4xl md:text-5xl">
-            Everything you need to run your books.
+            Felejtse el a papírmunkát – a jövő jelenléti rendszere megérkezett
           </h2>
           <p className="mt-6 text-lg tracking-tight text-blue-100">
-            Well everything you need if you aren’t that picky about minor
-            details like tax compliance.
+            Az Absenta teljeskörű megoldást kínál oktatóknak, amely 80%-kal csökkenti az adminisztrációra fordított időt, miközben pontos és megbízható adatokat szolgáltat a hallgatói részvételről.
           </p>
         </div>
         <TabGroup

@@ -10,16 +10,15 @@ export default function Register() {
           <div className="grid items-center md:grid-cols-2 gap-8 lg:gap-12">
             <div>
               <p className="inline-block text-sm font-medium bg-clip-text bg-gradient-to-l from-blue-600 to-violet-500 text-transparent dark:from-blue-400 dark:to-violet-400">
-                A vision for 2024
+                Oktatási innováció 2025
               </p>
               {/* Title */}
               <div className="mt-4 md:mb-12 max-w-2xl">
                 <h1 className="mb-4 scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-                  Cloud Unleashed: Your Future in the Sky
+                  Jelenléttartás egyszerűen
                 </h1>
                 <p className="text-xl text-muted-foreground">
-                  Experience limitless possibilities with our cutting-edge cloud
-                  solutions.
+                  Felejtse el a papíralapú adminisztrációt és fedezze fel a modern jelenlét-nyilvántartás előnyeit.
                 </p>
               </div>
               {/* End Title */}
@@ -41,8 +40,7 @@ export default function Register() {
                 </svg>
                 <div className="relative z-10">
                   <p className="text-xl italic">
-                    Amazing people to work with. Very fast and professional
-                    partner.
+                    Célom egy olyan rendszer létrehozása volt, amely megkönnyíti az oktatók dolgát.
                   </p>
                 </div>
                 <footer className="mt-3">
@@ -55,9 +53,9 @@ export default function Register() {
                       />
                     </div>
                     <div className="grow ms-4">
-                      <div className="font-semibold">Emily Torres</div>
+                      <div className="font-semibold">Le Thien Nam</div>
                       <div className="text-xs text-muted-foreground">
-                        Chief Technology Officer | Skyward SaaS
+                        Fejlesztő | ELTE
                       </div>
                     </div>
                   </div>

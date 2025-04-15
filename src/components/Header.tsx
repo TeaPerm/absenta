@@ -104,11 +104,11 @@ export function Header() {
                           className="absolute inset-x-0 top-0 z-0 origin-top rounded-b-2xl bg-gray-50 px-6 pt-32 pb-6 shadow-2xl shadow-gray-900/20"
                         >
                           <div className="space-y-4">
+                            <MobileNavLink href="/#steps">
+                              Lépések
+                            </MobileNavLink>
                             <MobileNavLink href="/#features">
                               Features
-                            </MobileNavLink>
-                            <MobileNavLink href="/#reviews">
-                              Reviews
                             </MobileNavLink>
                             <MobileNavLink href="/#pricing">
                               Pricing
@@ -149,7 +149,6 @@ export function Header() {
 function AuthenticatedLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useUser();
-  console.log(user);
 
   if (isAuthenticated) {
     return (
