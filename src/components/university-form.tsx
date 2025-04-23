@@ -183,7 +183,7 @@ const UniversityForm = ({ onClose }: UniversityFormProps = {}) => {
         </Button>
         <Button 
           onClick={handleSubmit} 
-          className="mt-4"
+          className="mt-4 bg-theme hover:bg-theme/80"
           disabled={selectedUniversities.length === 0 || updateUniversitiesMutation.isPending}
         >
           Mentés

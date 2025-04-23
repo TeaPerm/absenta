@@ -1,4 +1,4 @@
-import { ChevronRight, SquareTerminal } from "lucide-react";
+import { ChevronRight, Plus, SquareTerminal } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -15,19 +15,17 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-
 import { useAuthStore } from "@/hooks/useAuth";
-import { Button } from "./ui/button";
 import { Link, useParams } from "react-router-dom";
 import { useCourses } from "@/hooks/useCourses";
+import { Button } from "./ui/button";
 
 export function NavMain() {
   const token = useAuthStore((state) => state.token);
-  const {university : selectedUniversity} = useParams();
-
+  const { university: selectedUniversity } = useParams();
 
   const { data: courses, isLoading } = useCourses(selectedUniversity, token);
-  
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="gap-2">
@@ -43,15 +41,17 @@ export function NavMain() {
           </>
         )}
 
-        {courses && courses.length < 1 && <Button>Kurzus hozzáadása </Button>}
+        {courses && courses.length < 1 && (
+          <Button className="w-fit text-sm text-center">
+            <div className="flex items-center justify-center">
+              Jelenleg nincs kurzusod
+            </div>
+          </Button>
+        )}
 
         {courses &&
           courses.map((course) => (
-            <Collapsible
-              key={course._id}
-              asChild
-              className="group/collapsible"
-            >
+            <Collapsible key={course._id} asChild className="group/collapsible">
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
@@ -68,7 +68,9 @@ export function NavMain() {
                     {sidebarMenuSubitems.map((item) => (
                       <SidebarMenuSubItem key={item.title}>
                         <SidebarMenuSubButton asChild>
-                          <Link to={`/${selectedUniversity}/${course._id}${item.url}`}>
+                          <Link
+                            to={`/${selectedUniversity}/${course._id}${item.url}`}
+                          >
                             <span>{item.title}</span>
                           </Link>
                         </SidebarMenuSubButton>
@@ -87,18 +89,18 @@ export function NavMain() {
 const sidebarMenuSubitems = [
   {
     title: "Kezdőlap",
-    url: "", 
+    url: "",
   },
   {
     title: "Tanulók",
-    url: "/students", 
+    url: "/students",
   },
   {
     title: "Jelenléti ívek",
-    url: "/attendance", 
+    url: "/attendance",
   },
   {
     title: "Beállítások",
-    url: "/settings", 
+    url: "/settings",
   },
 ];

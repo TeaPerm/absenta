@@ -16,7 +16,9 @@ export function Dashboard() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Vezérlőpult</h1>
         <Link to={`/${university}/create`}>
-          <Button>Kurzus hozzáadása</Button>
+          <Button className="bg-theme text-white hover:bg-theme/80">
+            Kurzus hozzáadása
+          </Button>
         </Link>
       </div>
 
