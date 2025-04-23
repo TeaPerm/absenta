@@ -11,7 +11,6 @@ import { CourseCreate } from './course/course-create'
 import AttendanceUpload from './course/attendance-upload'
 import AttendanceView from './course/attendance-view'
 import { CourseSettings } from './course/course-settings'
-
 function Router() {
   return (
     <Routes>
@@ -28,9 +27,6 @@ function Router() {
            <Route path="create" element={<CourseCreate />} />
            <Route path=":courseId/settings" element={<CourseSettings />} />
       </Route>
-      {/* <Route path="/courses/:courseId" element={<Layout />}>
-          <Route index element={<Course />} />
-      </Route> */}
     </Routes>
   )
 }

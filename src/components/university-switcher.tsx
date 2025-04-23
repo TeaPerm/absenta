@@ -18,8 +18,9 @@ import { getUniversityName } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import UniversityForm from "@/components/university-form";
+
 export function UniversitySwitcher({
   universities,
 }: {
@@ -107,11 +108,8 @@ export function UniversitySwitcher({
         <DialogTrigger asChild>
           <button className="hidden">Open Dialog</button>
         </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Manage Universities</DialogTitle>
-          </DialogHeader>
-          <UniversityForm />
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto w-[95vw]">
+          <UniversityForm onClose={() => setIsDialogOpen(false)} />
         </DialogContent>
       </Dialog>
     </>
