@@ -1,4 +1,4 @@
-import { ChevronRight, SquareTerminal } from "lucide-react";
+import { ChevronRight, Plus, SquareTerminal } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
