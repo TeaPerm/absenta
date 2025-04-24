@@ -118,7 +118,7 @@ export function Header() {
                           <div className="mt-8 flex flex-col gap-4">
                             {isAuthenticated ? (
                               <Link to={`${user?.university[0]}`}>
-                                <Button variant="outline" className="w-full">Vezérlőpult</Button>
+                                <Button variant="outline" className="w-full bg-theme hover:bg-theme/80">Vezérlőpult</Button>
                               </Link>
                             ) : (
                               <>
@@ -154,7 +154,7 @@ function AuthenticatedLayout() {
     return (
       <div className="max-lg:hidden">
         <Link to={`${user?.university[0]}`}>
-          <Button variant="outline">Vezérlőpult</Button>
+          <Button variant="outline" className="bg-theme text-white hover:text-white hover:bg-theme/80">Vezérlőpult</Button>
         </Link>
       </div>
     );
@@ -166,7 +166,7 @@ function AuthenticatedLayout() {
         <Button variant="outline">Regisztráció</Button>
       </Link>{" "}
       <Link to="/login">
-        <Button>Belépés</Button>
+        <Button className="bg-theme hover:bg-theme/80">Belépés</Button>
       </Link>
     </div>
   );

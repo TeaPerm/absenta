@@ -17,7 +17,7 @@ import {
 import { getUniversityName } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import UniversityForm from "@/components/university-form";
 
@@ -49,14 +49,13 @@ export function UniversitySwitcher({
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent h-20 cursor-pointer data-[state=open]:text-sidebar-accent-foreground"
               >
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <University className="size-4" />
+                <div className="bg-theme text-white flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <University className="size-4 stroke-2" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="font-semibold">
                     {getUniversityName(selectedUniversity)}
                   </span>
-                  {/* <span className="truncate text-xs">{selectedUniversity}</span> */}
                 </div>
                 <ChevronsUpDown className="ml-auto" />
               </SidebarMenuButton>

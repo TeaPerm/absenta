@@ -1,7 +1,5 @@
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import clsx from "clsx";
 import { Container } from "@/components/ui/container";
-import { useId } from "react";
+import React, { useId } from "react";
 
 interface Feature {
   name: React.ReactNode;
@@ -99,124 +97,6 @@ const features: Array<Feature> = [
   },
 ];
 
-function Feature({
-  feature,
-  isActive,
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"div"> & {
-  feature: Feature;
-  isActive: boolean;
-}) {
-  return (
-    <div
-      className={clsx(className, !isActive && "opacity-75 hover:opacity-100")}
-      {...props}
-    >
-      <div
-        className={clsx(
-          "w-9 rounded-lg",
-          isActive ? "bg-blue-600" : "bg-slate-500"
-        )}
-      >
-        <svg aria-hidden="true" className="h-9 w-9" fill="none">
-          <feature.icon />
-        </svg>
-      </div>
-      <h3
-        className={clsx(
-          "mt-6 text-sm font-medium",
-          isActive ? "text-blue-600" : "text-slate-600"
-        )}
-      >
-        {feature.name}
-      </h3>
-      <p className="mt-2 font-display text-xl text-slate-900">
-        {feature.summary}
-      </p>
-      <p className="mt-4 text-sm text-slate-600">{feature.description}</p>
-    </div>
-  );
-}
-
-function FeaturesMobile() {
-  return (
-    <div className="-mx-4 mt-20 flex flex-col gap-y-10 overflow-hidden px-4 sm:-mx-6 sm:px-6 lg:hidden">
-      {features.map((feature) => (
-        <div key={feature.summary}>
-          <Feature feature={feature} className="mx-auto max-w-2xl" isActive />
-          <div className="relative mt-10 pb-10">
-            <div className="absolute -inset-x-4 top-8 bottom-0 bg-slate-200 sm:-inset-x-6" />
-            <div className="relative mx-auto w-[52.75rem] overflow-hidden rounded-xl bg-white ring-1 shadow-lg shadow-slate-900/5 ring-slate-500/10">
-              <img
-                className="w-full"
-                src={feature.image}
-                alt=""
-                sizes="52.75rem"
-              />
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function FeaturesDesktop() {
-  return (
-    <TabGroup className="hidden lg:mt-20 lg:block">
-      {({ selectedIndex }) => (
-        <>
-          <TabList className="grid grid-cols-3 gap-x-8">
-            {features.map((feature, featureIndex) => (
-              <Feature
-                key={feature.summary}
-                feature={{
-                  ...feature,
-                  name: (
-                    <Tab className="data-selected:not-data-focus:outline-hidden">
-                      <span className="absolute inset-0" />
-                      {feature.name}
-                    </Tab>
-                  ),
-                }}
-                isActive={featureIndex === selectedIndex}
-                className="relative"
-              />
-            ))}
-          </TabList>
-          <TabPanels className="relative mt-20 overflow-hidden rounded-4xl bg-slate-200 px-14 py-16 xl:px-16">
-            <div className="-mx-5 flex">
-              {features.map((feature, featureIndex) => (
-                <TabPanel
-                  static
-                  key={feature.summary}
-                  className={clsx(
-                    "px-5 transition duration-500 ease-in-out data-selected:not-data-focus:outline-hidden",
-                    featureIndex !== selectedIndex && "opacity-60"
-                  )}
-                  style={{ transform: `translateX(-${selectedIndex * 100}%)` }}
-                  aria-hidden={featureIndex !== selectedIndex}
-                >
-                  <div className="w-[52.75rem] overflow-hidden rounded-xl bg-white ring-1 shadow-lg shadow-slate-900/5 ring-slate-500/10">
-                    <img
-                      className="w-full"
-                      src={feature.image}
-                      alt=""
-                      sizes="52.75rem"
-                    />
-                  </div>
-                </TabPanel>
-              ))}
-            </div>
-            <div className="pointer-events-none absolute inset-0 rounded-4xl ring-1 ring-slate-900/10 ring-inset" />
-          </TabPanels>
-        </>
-      )}
-    </TabGroup>
-  );
-}
-
 export function Features() {
   return (
     <section
@@ -235,8 +115,147 @@ export function Features() {
             nyilvántartást vezet.
           </p>
         </div>
-        <FeaturesMobile />
-        <FeaturesDesktop />
+
+        {/* Bento Grid Implementation */}
+        <div className="mt-10 grid gap-4 sm:mt-16 lg:grid-cols-3 lg:grid-rows-2">
+          {/* Mobile Friendly Feature - Larger Card */}
+          <div className="relative lg:row-span-2">
+            <div className="absolute inset-px rounded-lg bg-white lg:rounded-l-[2rem]"></div>
+            <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)] lg:rounded-l-[calc(2rem+1px)]">
+              <div className="px-8 pb-3 pt-8 sm:px-10 sm:pb-0 sm:pt-10">
+                <div className="flex items-center">
+                  <div className="w-9 rounded-lg bg-blue-600">
+                    <svg aria-hidden="true" className="h-9 w-9" fill="none">
+                    {React.createElement(features[2].icon)}
+                    </svg>
+                  </div>
+                  <p className="ml-4 text-lg font-medium tracking-tight text-gray-950">
+                    {features[0].name}
+                  </p>
+                </div>
+                <p className="mt-2 max-w-lg text-sm/6 text-gray-600">
+                  {features[0].description}
+                </p>
+              </div>
+              <div className="relative min-h-[30rem] w-full grow [container-type:inline-size] max-lg:mx-auto max-lg:max-w-sm">
+                <div className="absolute inset-x-10 bottom-0 top-10 overflow-hidden rounded-t-[12cqw] border-x-[3cqw] border-t-[3cqw] border-gray-700 bg-gray-900 shadow-2xl">
+                  <img
+                    className="size-full object-cover object-top"
+                    src={features[0].image}
+                    alt={features[0].name as string}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5 lg:rounded-l-[2rem]"></div>
+          </div>
+
+          {/* Performance Feature */}
+          <div className="relative max-lg:row-start-1">
+            <div className="absolute inset-px rounded-lg bg-white max-lg:rounded-t-[2rem]"></div>
+            <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)] max-lg:rounded-t-[calc(2rem+1px)]">
+              <div className="px-8 pt-8 sm:px-10 sm:pt-10">
+                <div className="flex items-center max-lg:justify-center">
+                  <div className="w-9 rounded-lg bg-blue-600">
+                    <svg aria-hidden="true" className="h-9 w-9" fill="none">
+                      {React.createElement(features[1].icon)}
+                    </svg>
+                  </div>
+                  <p className="ml-4 text-lg font-medium tracking-tight text-gray-950">
+                    {features[1].name}
+                  </p>
+                </div>
+                <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
+                  {features[1].description}
+                </p>
+              </div>
+              <div className="flex flex-1 items-center justify-center px-8 max-lg:pb-12 max-lg:pt-10 sm:px-10 lg:pb-2">
+                <img
+                  className="w-full max-lg:max-w-xs"
+                  src={features[1].image}
+                  alt={features[1].name as string}
+                />
+              </div>
+            </div>
+            <div className="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5 max-lg:rounded-t-[2rem]"></div>
+          </div>
+
+          {/* Security Feature */}
+          <div className="relative max-lg:row-start-3 lg:col-start-2 lg:row-start-2">
+            <div className="absolute inset-px rounded-lg bg-white"></div>
+            <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)]">
+              <div className="px-8 pt-8 sm:px-10 sm:pt-10">
+                <div className="flex items-center max-lg:justify-center">
+                  <div className="w-9 rounded-lg bg-blue-600">
+                    <svg aria-hidden="true" className="h-9 w-9" fill="none">
+                    {React.createElement(features[2].icon)}
+                    </svg>
+                  </div>
+                  <p className="ml-4 text-lg font-medium tracking-tight text-gray-950">
+                    {features[2].name}
+                  </p>
+                </div>
+                <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
+                  {features[2].description}
+                </p>
+              </div>
+              <div className="flex flex-1 items-center [container-type:inline-size] max-lg:py-6 lg:pb-2">
+                <img
+                  className="h-[min(152px,40cqw)] object-cover"
+                  src={features[2].image}
+                  alt={features[2].name as string}
+                />
+              </div>
+            </div>
+            <div className="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5"></div>
+          </div>
+
+          {/* API Feature - Code Example Card */}
+          <div className="relative lg:row-span-2">
+            <div className="absolute inset-px rounded-lg bg-white max-lg:rounded-b-[2rem] lg:rounded-r-[2rem]"></div>
+            <div className="relative flex h-full flex-col overflow-hidden rounded-[calc(theme(borderRadius.lg)+1px)] max-lg:rounded-b-[calc(2rem+1px)] lg:rounded-r-[calc(2rem+1px)]">
+              <div className="px-8 pb-3 pt-8 sm:px-10 sm:pb-0 sm:pt-10">
+                <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">
+                  Automatizált folyamatok
+                </p>
+                <p className="mt-2 max-w-lg text-sm/6 text-gray-600 max-lg:text-center">
+                  Az Absenta API-kapcsolatokkal segít integrálni a jelenléti adatokat az oktatási rendszerekbe.
+                </p>
+              </div>
+              <div className="relative min-h-[30rem] w-full grow">
+                <div className="absolute bottom-0 left-10 right-0 top-10 overflow-hidden rounded-tl-xl bg-gray-900 shadow-2xl">
+                  <div className="flex bg-gray-800/40 ring-1 ring-white/5">
+                    <div className="-mb-px flex text-sm/6 font-medium text-gray-400">
+                      <div className="border-b border-r border-b-white/20 border-r-white/10 bg-white/5 px-4 py-2 text-white">
+                        AbsentaAPI.js
+                      </div>
+                      <div className="border-r border-gray-600/10 px-4 py-2">App.js</div>
+                    </div>
+                  </div>
+                  <div className="px-6 pb-14 pt-6 text-sm text-gray-300">
+                    <pre>
+{`// Absenta API integráció
+const processAttendance = async (imageData) => {
+  const response = await absenta.analyze({
+    course_id: "CSC101",
+    image: imageData,
+    date: new Date()
+  });
+  
+  // Automatikus Neptun exportálás
+  if (response.success) {
+    await absenta.exportToNeptun(response.data);
+    console.log("Sikeres exportálás");
+  }
+}`}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="pointer-events-none absolute inset-px rounded-lg shadow ring-1 ring-black/5 max-lg:rounded-b-[2rem] lg:rounded-r-[2rem]"></div>
+          </div>
+        </div>
       </Container>
     </section>
   );

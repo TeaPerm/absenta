@@ -45,10 +45,10 @@ export function Steps() {
             {/* Step 1 */}
             <div className="relative overflow-hidden bg-white rounded-2xl shadow-xl p-6 border border-blue-100 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
               <div className="absolute right-0 top-0 -mr-16 -mt-16 w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center">
-                <FileText className="h-8 w-8 text-blue-600 relative left-[-2rem] top-[2rem]" />
+                <FileText className="h-8 w-8 text-theme relative left-[-2rem] top-[2rem]" />
               </div>
               <div className="flex justify-center items-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-theme text-white mb-4">
                   <span className="font-bold">1</span>
                 </div>
               </div>
@@ -64,10 +64,10 @@ export function Steps() {
             {/* Step 2 */}
             <div className="relative overflow-hidden bg-white rounded-2xl shadow-xl p-6 border border-blue-100 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
               <div className="absolute right-0 top-0 -mr-16 -mt-16 w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center">
-                <Upload className="h-8 w-8 text-blue-600 relative left-[-2rem] top-[2rem]" />
+                <Upload className="h-8 w-8 text-theme relative left-[-2rem] top-[2rem]" />
               </div>
               <div className="flex justify-center items-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-theme text-white mb-4">
                   <span className="font-bold">2</span>
                 </div>
               </div>
@@ -80,10 +80,10 @@ export function Steps() {
             {/* Step 3 */}
             <div className="relative overflow-hidden bg-white rounded-2xl shadow-xl p-6 border border-blue-100 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
               <div className="absolute right-0 top-0 -mr-16 -mt-16 w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center">
-                <Camera className="h-8 w-8 text-blue-600 relative left-[-2rem] top-[2rem]" />
+                <Camera className="h-8 w-8 text-theme relative left-[-2rem] top-[2rem]" />
               </div>
               <div className="flex justify-center items-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-theme text-white mb-4">
                   <div className="font-bold text-center justify-center items-center">
                     3
                   </div>
@@ -101,10 +101,10 @@ export function Steps() {
             {/* Step 4 */}
             <div className="relative overflow-hidden bg-white rounded-2xl shadow-xl p-6 border border-blue-100 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
               <div className="absolute right-0 top-0 -mr-16 -mt-16 w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center">
-                <Download className="h-8 w-8 text-blue-600 relative left-[-2rem] top-[2rem]" />
+                <Download className="h-8 w-8 text-theme relative left-[-2rem] top-[2rem]" />
               </div>
               <div className="flex justify-center items-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-theme text-white mb-4">
                   <span className="font-bold">4</span>
                 </div>
               </div>
