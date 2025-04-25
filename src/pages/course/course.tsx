@@ -6,15 +6,9 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { API_URL } from "@/lib/constants";
 import { useAuthStore } from "@/hooks/useAuth";
-import {
-  Users,
-  Calendar,
-  CheckCircle,
-  XCircle,
-  Clock,
-  FileText,
-  BarChart3,
-} from "lucide-react";
+import { useAppStore } from "@/hooks/useAppStore";
+import { useEffect } from "react";
+import { Users, Calendar, CheckCircle, BarChart3 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -26,14 +20,9 @@ import {
 } from "@/components/ui/table";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { AttendanceStatsCard } from "@/components/attendance-stats-card";
+import { AttendancePieChart } from "@/components/attendance-pie-chart";
+import { AttendanceTrendChart } from "@/components/attendance-trend-chart";
 
 interface CourseStats {
   courseName: string;
@@ -91,6 +80,16 @@ const Course = () => {
   const { courseId } = useParams();
   const { data: course, isLoading, isError, error } = useCourse(courseId);
   const token = useAuthStore((state) => state.token);
+  const setActiveCourseId = useAppStore((state) => state.setActiveCourseId);
+
+  // Set active course ID when component mounts
+  useEffect(() => {
+    if (courseId) {
+      setActiveCourseId(courseId);
+    }
+
+    // Removed cleanup to keep menu open when navigating between course pages
+  }, [courseId, setActiveCourseId]);
 
   const { data: courseStats, isLoading: statsLoading } = useQuery<CourseStats>({
     queryKey: ["courseStats", courseId],
@@ -212,7 +211,7 @@ const Course = () => {
             <CardTitle className="text-sm font-medium">
               Összes hallgató
             </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-theme" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalStudents}</div>
@@ -224,7 +223,7 @@ const Course = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Összes óra</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-theme" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -238,7 +237,7 @@ const Course = () => {
             <CardTitle className="text-sm font-medium">
               Jelenléti arány
             </CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <BarChart3 className="h-4 w-4 text-theme" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -252,7 +251,7 @@ const Course = () => {
             <CardTitle className="text-sm font-medium">
               Jelenléti státusz
             </CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CheckCircle className="h-4 w-4 text-theme" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -273,54 +272,19 @@ const Course = () => {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Jelenléti trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {attendanceChartData.length > 0 ? (
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={attendanceChartData}
-                  margin={{
-                    top: 10,
-                    right: 30,
-                    left: 0,
-                    bottom: 0,
-                  }}
-                >
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area
-                    type="natural"
-                    dataKey="attended"
-                    name="Megjelent"
-                    stroke="#22c55e"
-                    fill="#dcfce7"
-                    fillOpacity={0.8}
-                  />
-                  <Area
-                    type="natural"
-                    dataKey="missed"
-                    name="Nem jelent meg"
-                    stroke="#ef4444"
-                    fill="#fee2e2"
-                    fillOpacity={0.5}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                Nincs elég adat a trend megjelenítéséhez.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <AttendanceStatsCard
+          stats={courseStats?.students || []}
+          className="col-span-2"
+        />
+
+        <AttendancePieChart
+          stats={courseStats?.students || []}
+          className="col-span-2"
+        />
+      </div>
+
+      <AttendanceTrendChart data={attendanceChartData} />
 
       {/* Tabs for different views */}
       <Tabs defaultValue="overview" className="space-y-4">
@@ -424,56 +388,6 @@ const Course = () => {
               </CardContent>
             </Card>
           </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Jelenléti statisztikák</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="flex flex-col items-center p-4 bg-green-50 rounded-lg">
-                  <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
-                  <div className="text-2xl font-bold text-green-600">
-                    {courseStats?.students.reduce(
-                      (acc, student) => acc + student.attended,
-                      0
-                    ) || 0}
-                  </div>
-                  <div className="text-sm text-green-600">Megjelent</div>
-                </div>
-                <div className="flex flex-col items-center p-4 bg-red-50 rounded-lg">
-                  <XCircle className="h-8 w-8 text-red-600 mb-2" />
-                  <div className="text-2xl font-bold text-red-600">
-                    {courseStats?.students.reduce(
-                      (acc, student) => acc + student.missed,
-                      0
-                    ) || 0}
-                  </div>
-                  <div className="text-sm text-red-600">Nem jelent meg</div>
-                </div>
-                <div className="flex flex-col items-center p-4 bg-yellow-50 rounded-lg">
-                  <Clock className="h-8 w-8 text-yellow-600 mb-2" />
-                  <div className="text-2xl font-bold text-yellow-600">
-                    {courseStats?.students.reduce(
-                      (acc, student) => acc + student.late,
-                      0
-                    ) || 0}
-                  </div>
-                  <div className="text-sm text-yellow-600">Késett</div>
-                </div>
-                <div className="flex flex-col items-center p-4 bg-blue-50 rounded-lg">
-                  <FileText className="h-8 w-8 text-blue-600 mb-2" />
-                  <div className="text-2xl font-bold text-blue-600">
-                    {courseStats?.students.reduce(
-                      (acc, student) => acc + student.excused,
-                      0
-                    ) || 0}
-                  </div>
-                  <div className="text-sm text-blue-600">Igazoltan távol</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="students" className="space-y-4">
@@ -487,23 +401,23 @@ const Course = () => {
               </Link>
             </CardHeader>
             <CardContent>
-      <div className="border rounded-lg">
-        <div className="grid grid-cols-2 gap-4 p-4 border-b bg-muted">
-          <div className="font-medium">Neptun kód</div>
-          <div className="font-medium">Név</div>
-        </div>
-        <div className="divide-y">
-          {course.students.map((student) => (
-            <div
-              key={student.neptun_code}
-              className="grid grid-cols-2 gap-4 p-4 hover:bg-muted/50"
-            >
+              <div className="border rounded-lg">
+                <div className="grid grid-cols-2 gap-4 p-4 border-b bg-muted">
+                  <div className="font-medium">Neptun kód</div>
+                  <div className="font-medium">Név</div>
+                </div>
+                <div className="divide-y">
+                  {course.students.map((student) => (
+                    <div
+                      key={student.neptun_code}
+                      className="grid grid-cols-2 gap-4 p-4 hover:bg-muted/50"
+                    >
                       <div className="font-mono">{student.neptun_code}</div>
-              <div>{student.name}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+                      <div>{student.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -587,7 +501,7 @@ const Course = () => {
                     </Link>
                   </div>
                 )}
-      </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

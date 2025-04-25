@@ -1,15 +1,22 @@
 import { useCourses } from "@/hooks/useCourses";
 import { useAuthStore } from "@/hooks/useAuth";
+import { useAppStore } from "@/hooks/useAppStore";
 import { useParams } from "react-router-dom";
 import { CourseCard } from "@/components/course-card";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";    
+import { useEffect } from "react";
 
 export function Dashboard() {
   const token = useAuthStore((state) => state.token);
   const { university } = useParams();
   const { data: courses, isLoading } = useCourses(university!, token);
+  const setActiveCourseId = useAppStore((state) => state.setActiveCourseId);
+
+  useEffect(() => {
+    setActiveCourseId(null);
+  }, []);
 
   return (
     <Container className="py-8">
