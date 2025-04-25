@@ -9,7 +9,7 @@ import { useCourse } from "@/hooks/useCourse";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { hu } from "date-fns/locale";
-import { CalendarIcon, Camera, Image, X } from "lucide-react";
+import { CalendarIcon, Camera, Image, X, Loader2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -29,17 +29,26 @@ const AttendanceUpload = () => {
   const [image, setImage] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [date, setDate] = useState<Date>(new Date());
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showResults, setShowResults] = useState(false);
-  const [processedData, setProcessedData] = useState<ProcessedData | null>(
-    null
-  );
+  const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [progress, setProgress] = useState(0);
 
   const { courseId } = useParams();
   const { data: course } = useCourse(courseId);
+
+  const getProcessingStageText = (progressValue: number) => {
+    if (progressValue < 25) {
+      return "Táblázat keresése...";
+    } else if (progressValue < 50) {
+      return "Oszlopok és cellák keresése...";
+    } else if (progressValue < 75) {
+      return "Aláírások és nevek feldolgozása...";
+    } else {
+      return "Adatok ellenőrzése és összesítése...";
+    }
+  };
 
   const onDrop = React.useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles?.length > 0) {
@@ -83,18 +92,27 @@ const AttendanceUpload = () => {
           },
         }
       );
-      console.log(formData);
       return response.data as ProcessedData;
     },
     onSuccess: (data) => {
-      toast.success("Kép sikeresen feldolgozva");
-      console.log("Feldolgozott adat:", data);
+      toast.success("Kép sikeresen feldolgozva", {
+        style: {
+          background: "#0284c7",
+          border: "1px solid oklch(90.1% 0.058 230.902)",
+          color: "white",
+        },
+      });
       setProcessedData(data);
       setShowResults(true);
     },
     onError: (error) => {
-      toast.error("Sikertelen képfeldolgozás");
-      console.error("Képfeldolgozási hiba:", error);
+      toast.error("Sikertelen képfeldolgozás: " + error.message, {
+        style: {
+          background: "#dc2626",
+          border: "1px solid #fca5a5",
+          color: "white",
+        },
+      });
     },
   });
 
@@ -104,13 +122,14 @@ const AttendanceUpload = () => {
     if (processImageMutation.isPending && progress < 95) {
       interval = setInterval(() => {
         setProgress((prev) => {
-          // Increase speed based on current progress
-          if (prev < 30) return prev + 2;
-          if (prev < 60) return prev + 1;
-          if (prev < 90) return prev + 0.5;
+          // Progressive speed adjustments
+          if (prev < 20) return prev + 0.8;
+          if (prev < 40) return prev + 0.6;
+          if (prev < 60) return prev + 0.4;
+          if (prev < 80) return prev + 0.3;
           return prev + 0.2;
         });
-      }, 200);
+      }, 20);
     }
 
     if (!processImageMutation.isPending) {
@@ -125,26 +144,25 @@ const AttendanceUpload = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!image || !date) {
-      toast.error("Kérlek válassz dátumot és tölts fel egy képet");
+      toast.error("Kérlek válassz dátumot és tölts fel egy képet", {
+        style: {
+          background: "#dc2626",
+          border: "1px solid #fca5a5",
+          color: "white",
+        },
+      });
       return;
     }
     handleProcessImage();
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment' // Use back camera on mobile devices
+        } 
+      });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
@@ -152,7 +170,13 @@ const AttendanceUpload = () => {
       setIsCameraActive(true);
     } catch (error) {
       console.error("Error accessing camera:", error);
-      toast.error("Failed to access camera");
+      toast.error("Hiba a kamera elérése közben", {
+        style: {
+          background: "#dc2626",
+          border: "1px solid #fca5a5",
+          color: "white",
+        },
+      });
     }
   };
 
@@ -178,21 +202,28 @@ const AttendanceUpload = () => {
     }
   };
 
+  const handleClearImage = () => {
+    setImage(null);
+    setShowResults(false);
+    setProcessedData(null);
+  };
+
   const handleProcessImage = () => {
     if (image) {
+      setProgress(0);
       processImageMutation.mutate(image);
     }
   };
 
   return (
-    <Container className="py-8">
-      <div className="max-w-2xl mx-auto space-y-6 mb-8">
-        <h1 className="text-2xl font-bold text-center">
+    <Container className="py-4 sm:py-8">
+      <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6 mb-4 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl font-bold text-center">
           Jelenléti ív feltöltése
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Dátum</label>
               <Popover>
@@ -224,61 +255,17 @@ const AttendanceUpload = () => {
               </Popover>
             </div>
 
-            {!isCameraActive ? (
-              <div className="space-y-4">
-                {!image && (
-                  <div
-                    {...getRootProps()}
-                    className={cn(
-                      "border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer flex flex-col items-center justify-center",
-                      isDragActive
-                        ? "border-primary bg-primary/5"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
-                    )}
-                  >
-                    <input {...getInputProps()} />
-                    <Image className="h-10 w-10 text-theme/50 mb-2" />
-                    <div className="flex flex-col items-center text-center">
-                      <span className="font-medium">
-                        {isDragActive
-                          ? "Húzd ide a képet"
-                          : "Húzd ide a képet vagy kattints a feltöltéshez"}
-                      </span>
-                      <span className="text-sm text-muted-foreground mt-1">
-                        JPG, PNG fájlok (max. 10MB)
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button
-                    type="button"
-                    onClick={startCamera}
-                    variant={"theme"}
-                    className="flex-1"
-                  >
-                    <Camera className="h-4 w-4 mr-2" />
-                    Kamera használata
-                  </Button>
+            {isCameraActive ? (
+              <div className="space-y-3 sm:space-y-4">
+                <div className="relative w-full overflow-hidden rounded-lg border bg-black">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full h-auto"
+                  />
                 </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full rounded-lg"
-                />
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                   <Button
                     type="button"
                     onClick={captureImage}
@@ -296,10 +283,8 @@ const AttendanceUpload = () => {
                   </Button>
                 </div>
               </div>
-            )}
-
-            {image && (
-              <div className="space-y-4">
+            ) : image ? (
+              <div className="space-y-3 sm:space-y-4">
                 <div className="relative aspect-[3/2] w-full overflow-hidden rounded-lg border">
                   <img
                     src={image}
@@ -308,7 +293,7 @@ const AttendanceUpload = () => {
                   />
                   <Button
                     type="button"
-                    onClick={() => setImage(null)}
+                    onClick={handleClearImage}
                     variant="destructive"
                     size="icon"
                     className="absolute top-2 right-2 h-8 w-8"
@@ -318,24 +303,75 @@ const AttendanceUpload = () => {
                 </div>
                 <Button
                   type="submit"
+                  variant={"theme"}
                   className="w-full"
                   disabled={processImageMutation.isPending}
                 >
-                  {processImageMutation.isPending
-                    ? `Feldolgozás folyamatban... ${Math.min(
-                        Math.round(progress),
-                        99
-                      )}%`
-                    : "Kép feldolgozása"}
+                  {processImageMutation.isPending ? (
+                    <div className="flex items-center">
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <div className="flex flex-col items-start">
+                        <span>{getProcessingStageText(progress)}</span>
+                        <div className="w-full bg-white/20 rounded-full h-1 mt-1">
+                          <div
+                            className="bg-white h-1 rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(Math.round(progress), 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    "Kép feldolgozása"
+                  )}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3 sm:space-y-4">
+                <div
+                  {...getRootProps()}
+                  className={cn(
+                    "border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer flex flex-col items-center justify-center",
+                    isDragActive
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50 hover:bg-muted/50"
+                  )}
+                >
+                  <input {...getInputProps()} />
+                  <Image className="h-10 w-10 text-theme/50 mb-2" />
+                  <div className="flex flex-col items-center text-center">
+                    <span className="font-medium">
+                      {isDragActive
+                        ? "Húzd ide a képet"
+                        : "Húzd ide a képet vagy kattints a feltöltéshez"}
+                    </span>
+                    <span className="text-sm text-muted-foreground mt-1">
+                      JPG, PNG fájlok (max. 10MB)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <span className="text-sm text-muted-foreground">vagy</span>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={startCamera}
+                  variant={"theme"}
+                  className="w-full"
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  Kamera használata
                 </Button>
               </div>
             )}
           </div>
         </form>
       </div>
+      
       {showResults && image && (
         <AttendanceTable
-          attendanceImage={image!}
+          attendanceImage={image}
           attendanceData={processedData?.students || []}
           courseId={courseId!}
           date={date}
