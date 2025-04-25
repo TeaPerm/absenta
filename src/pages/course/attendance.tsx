@@ -11,7 +11,15 @@ import { Container } from "@/components/ui/container";
 import { useParams, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { hu } from "date-fns/locale";
-import { MoreVertical, Trash2, Eye, FolderInput, Printer } from "lucide-react";
+import {
+  MoreVertical,
+  Trash2,
+  Eye,
+  FolderInput,
+  Printer,
+  ArrowUpDown,
+  Pencil,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,17 +31,27 @@ import axios from "axios";
 import { API_URL } from "@/lib/constants";
 import { createExportName } from "@/lib/utils";
 import { useAuthStore } from "@/hooks/useAuth";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import * as XLSX from 'xlsx';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import * as XLSX from "xlsx";
 import { useCourse } from "@/hooks/useCourse";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PrintableAttendance } from "@/components/printable-attendance";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 interface AttendanceRecord {
   date: string;
@@ -56,20 +74,35 @@ interface AttendanceImage {
   description: string;
 }
 
+type SortField = "date" | "updatedAt";
+type SortDirection = "asc" | "desc";
+
 const Attendance = () => {
   const { courseId } = useParams();
   const token = useAuthStore((state) => state.token);
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<AttendanceRecord | null>(
+    null
+  );
   const course = useCourse(courseId);
   const courseName = course.data?.name;
   const students = course.data?.students || [];
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [selectedPrintDate, setSelectedPrintDate] = useState<Date>(new Date());
-  const [selectedPrintStartTime, setSelectedPrintStartTime] = useState<{ hours: string; minutes: string }>({ hours: '', minutes: '' });
-  const [selectedPrintEndTime, setSelectedPrintEndTime] = useState<{ hours: string; minutes: string }>({ hours: '', minutes: '' });
+  const [selectedPrintStartTime, setSelectedPrintStartTime] = useState<{
+    hours: string;
+    minutes: string;
+  }>({ hours: "", minutes: "" });
+  const [selectedPrintEndTime, setSelectedPrintEndTime] = useState<{
+    hours: string;
+    minutes: string;
+  }>({ hours: "", minutes: "" });
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Add sorting state
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const { data: attendances, isLoading: attendancesLoading } = useQuery({
     queryKey: ["attendances", courseId],
@@ -121,10 +154,10 @@ const Attendance = () => {
     // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(
-      record.students.map(student => ({
-        'Hallgató neve': student.student_name,
-        'Neptunkód': student.neptun_code,
-        'Jelenlét': student.status
+      record.students.map((student) => ({
+        "Hallgató neve": student.student_name,
+        Neptunkód: student.neptun_code,
+        Jelenlét: student.status,
       }))
     );
 
@@ -134,16 +167,18 @@ const Attendance = () => {
       { wch: 15 }, // Neptun kód
       { wch: 15 }, // Jelenlét
     ];
-    ws['!cols'] = colWidths;
+    ws["!cols"] = colWidths;
 
     // Add worksheet to workbook
-    XLSX.utils.book_append_sheet(wb, ws, 'Jelenléti ív');
+    XLSX.utils.book_append_sheet(wb, ws, "Jelenléti ív");
 
     // Generate Excel file
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
     const url = window.URL.createObjectURL(data);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = createExportName(courseName, new Date(record.date));
     document.body.appendChild(link);
@@ -162,8 +197,8 @@ const Attendance = () => {
       printDate.setHours(parseInt(selectedPrintStartTime.hours));
       printDate.setMinutes(parseInt(selectedPrintStartTime.minutes));
     }
-    
-    const printWindow = window.open('', '_blank');
+
+    const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
         <html>
@@ -221,7 +256,7 @@ const Attendance = () => {
             </style>
           </head>
           <body>
-            ${document.getElementById('printable-attendance')?.innerHTML}
+            ${document.getElementById("printable-attendance")?.innerHTML}
           </body>
         </html>
       `);
@@ -234,6 +269,33 @@ const Attendance = () => {
     setPrintDialogOpen(false);
   };
 
+  // Sort function to sort attendance records
+  const sortAttendances = (records: AttendanceRecord[] | undefined) => {
+    if (!records) return [];
+
+    return [...records].sort((a, b) => {
+      const dateA = new Date(a[sortField]).getTime();
+      const dateB = new Date(b[sortField]).getTime();
+
+      return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
+    });
+  };
+
+  // Toggle sort handler
+  const toggleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // Set new field and default to descending
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  // Get sorted attendance records
+  const sortedAttendances = sortAttendances(attendances);
+
   if (attendancesLoading) {
     return <div>Loading...</div>;
   }
@@ -241,7 +303,7 @@ const Attendance = () => {
   return (
     <Container className="py-4 sm:py-8">
       <div className="space-y-4 sm:space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0"> 
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
           <h1 className="text-xl sm:text-2xl font-bold">Jelenléti ív</h1>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button onClick={handlePrint} className="w-full sm:w-auto">
@@ -262,23 +324,56 @@ const Attendance = () => {
             <Table>
               <TableHeader>
                 <TableRow className="text-center">
-                  <TableHead className="text-center">Dátum</TableHead>
+                  <TableHead className="text-center">
+                    <Button
+                      variant="ghost"
+                      onClick={() => toggleSort("date")}
+                      className="flex items-center gap-1 h-8 -ml-4"
+                    >
+                      Dátum
+                      <ArrowUpDown
+                        className={cn(
+                          "h-4 w-4 transition-all",
+                          sortField === "date" &&
+                            sortDirection === "asc" &&
+                            "rotate-180",
+                          sortField !== "date" && "opacity-50"
+                        )}
+                      />
+                    </Button>
+                  </TableHead>
                   <TableHead className="text-center">Státusz</TableHead>
                   <TableHead className="text-center">Kép</TableHead>
-                  <TableHead className="text-center">Jelenlét</TableHead>
-                  <TableHead className="text-center">Feltöltés dátuma</TableHead>
+                  <TableHead className="text-center">
+                    <Button
+                      variant="ghost"
+                      onClick={() => toggleSort("updatedAt")}
+                      className="flex items-center gap-1 h-8 -ml-4"
+                    >
+                      Feltöltés dátuma
+                      <ArrowUpDown
+                        className={cn(
+                          "h-4 w-4 transition-all",
+                          sortField === "updatedAt" &&
+                            sortDirection === "asc" &&
+                            "rotate-180",
+                          sortField !== "updatedAt" && "opacity-50"
+                        )}
+                      />
+                    </Button>
+                  </TableHead>
                   <TableHead className="text-center">Műveletek</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {attendances?.length === 0 && (
+                {sortedAttendances?.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-bold">
                       Nincs még jelenléti ív
                     </TableCell>
                   </TableRow>
                 )}
-                {attendances?.map((record) => (
+                {sortedAttendances?.map((record) => (
                   <TableRow key={record._id}>
                     <TableCell className="font-medium">
                       <span className="hidden sm:inline">
@@ -307,9 +402,15 @@ const Attendance = () => {
                       {record.status && (
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="w-full">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full"
+                            >
                               <Eye className="h-4 w-4 mr-1" />
-                              <span className="hidden sm:inline">Megtekintés</span>
+                              <span className="hidden sm:inline">
+                                Megtekintés
+                              </span>
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-5xl">
@@ -330,18 +431,14 @@ const Attendance = () => {
                       )}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Link to={`${record._id}`}>
-                        <Button variant="ghost" size="sm" className="w-full">
-                          <Eye className="h-4 w-4 mr-1" />
-                          <span className="hidden sm:inline">Megtekintés</span>
-                        </Button>
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-center">
                       <span className="hidden sm:inline">
-                        {format(new Date(record.updatedAt), "yyyy. MMMM d. HH:mm", {
-                          locale: hu,
-                        })}
+                        {format(
+                          new Date(record.updatedAt),
+                          "yyyy. MMMM d. HH:mm",
+                          {
+                            locale: hu,
+                          }
+                        )}
                       </span>
                       <span className="sm:hidden">
                         {format(new Date(record.updatedAt), "yyyy. MMMM d.", {
@@ -358,14 +455,23 @@ const Attendance = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               className="cursor-pointer hover:bg-primary/10"
                               onClick={() => handleExport(record)}
                             >
                               <FolderInput className="mr-2 h-4 w-4" />
                               <span>Exportálás</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem className="cursor-pointer hover:bg-primary/10">
+                              <Link
+                                to={`${record._id}`}
+                                className="flex items-center w-full"
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                <span>Szerkesztés</span>
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
                               className="cursor-pointer text-red-600"
                               onSelect={() => handleDelete(record)}
                             >
@@ -389,7 +495,9 @@ const Attendance = () => {
         onOpenChange={setDeleteDialogOpen}
         title="Jelenléti ív törlése"
         description="Biztosan törölni szeretnéd ezt a jelenléti ívet? Ez a művelet nem visszafordítható."
-        onConfirm={() => selectedRecord && deleteMutation.mutate(selectedRecord._id)}
+        onConfirm={() =>
+          selectedRecord && deleteMutation.mutate(selectedRecord._id)
+        }
         confirmText="Törlés"
         cancelText="Mégse"
       />
@@ -400,7 +508,10 @@ const Attendance = () => {
           <div className="flex flex-col items-center gap-4 py-4">
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-[240px] justify-start text-left font-normal">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-[240px] justify-start text-left font-normal"
+                >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {selectedPrintDate ? (
                     format(selectedPrintDate, "yyyy. MMMM d.", { locale: hu })
@@ -423,7 +534,7 @@ const Attendance = () => {
                 />
               </PopoverContent>
             </Popover>
-            
+
             <div className="flex flex-col justify-center gap-4 w-full items-center">
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-medium">Kezdési időpont</span>
@@ -438,8 +549,14 @@ const Attendance = () => {
                       value={selectedPrintStartTime.hours}
                       onChange={(e) => {
                         const value = e.target.value;
-                        if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 23)) {
-                          setSelectedPrintStartTime(prev => ({ ...prev, hours: value }));
+                        if (
+                          value === "" ||
+                          (parseInt(value) >= 0 && parseInt(value) <= 23)
+                        ) {
+                          setSelectedPrintStartTime((prev) => ({
+                            ...prev,
+                            hours: value,
+                          }));
                         }
                       }}
                     />
@@ -453,13 +570,21 @@ const Attendance = () => {
                       value={selectedPrintStartTime.minutes}
                       onChange={(e) => {
                         const value = e.target.value;
-                        if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 59)) {
-                          setSelectedPrintStartTime(prev => ({ ...prev, minutes: value }));
+                        if (
+                          value === "" ||
+                          (parseInt(value) >= 0 && parseInt(value) <= 59)
+                        ) {
+                          setSelectedPrintStartTime((prev) => ({
+                            ...prev,
+                            minutes: value,
+                          }));
                         }
                       }}
                     />
                   </div>
-                  <span className="text-sm text-muted-foreground">(opcionális)</span>
+                  <span className="text-sm text-muted-foreground">
+                    (opcionális)
+                  </span>
                 </div>
               </div>
 
@@ -476,8 +601,14 @@ const Attendance = () => {
                       value={selectedPrintEndTime.hours}
                       onChange={(e) => {
                         const value = e.target.value;
-                        if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 23)) {
-                          setSelectedPrintEndTime(prev => ({ ...prev, hours: value }));
+                        if (
+                          value === "" ||
+                          (parseInt(value) >= 0 && parseInt(value) <= 23)
+                        ) {
+                          setSelectedPrintEndTime((prev) => ({
+                            ...prev,
+                            hours: value,
+                          }));
                         }
                       }}
                     />
@@ -491,20 +622,34 @@ const Attendance = () => {
                       value={selectedPrintEndTime.minutes}
                       onChange={(e) => {
                         const value = e.target.value;
-                        if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 59)) {
-                          setSelectedPrintEndTime(prev => ({ ...prev, minutes: value }));
+                        if (
+                          value === "" ||
+                          (parseInt(value) >= 0 && parseInt(value) <= 59)
+                        ) {
+                          setSelectedPrintEndTime((prev) => ({
+                            ...prev,
+                            minutes: value,
+                          }));
                         }
                       }}
                     />
                   </div>
-                  <span className="text-sm text-muted-foreground">(opcionális)</span>
+                  <span className="text-sm text-muted-foreground">
+                    (opcionális)
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button onClick={handlePrintConfirm} className="w-full sm:w-auto">Nyomtatás</Button>
-              <Button variant="outline" onClick={() => setPrintDialogOpen(false)} className="w-full sm:w-auto">
+              <Button onClick={handlePrintConfirm} className="w-full sm:w-auto">
+                Nyomtatás
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setPrintDialogOpen(false)}
+                className="w-full sm:w-auto"
+              >
                 Mégse
               </Button>
             </div>
@@ -518,12 +663,22 @@ const Attendance = () => {
           students={students}
           courseName={courseName || ""}
           date={selectedPrintDate}
-          startTime={selectedPrintStartTime.hours && selectedPrintStartTime.minutes ? 
-            `${selectedPrintStartTime.hours.padStart(2, '0')}:${selectedPrintStartTime.minutes.padStart(2, '0')}` : 
-            undefined}
-          endTime={selectedPrintEndTime.hours && selectedPrintEndTime.minutes ? 
-            `${selectedPrintEndTime.hours.padStart(2, '0')}:${selectedPrintEndTime.minutes.padStart(2, '0')}` : 
-            undefined}
+          startTime={
+            selectedPrintStartTime.hours && selectedPrintStartTime.minutes
+              ? `${selectedPrintStartTime.hours.padStart(
+                  2,
+                  "0"
+                )}:${selectedPrintStartTime.minutes.padStart(2, "0")}`
+              : undefined
+          }
+          endTime={
+            selectedPrintEndTime.hours && selectedPrintEndTime.minutes
+              ? `${selectedPrintEndTime.hours.padStart(
+                  2,
+                  "0"
+                )}:${selectedPrintEndTime.minutes.padStart(2, "0")}`
+              : undefined
+          }
         />
       </div>
     </Container>

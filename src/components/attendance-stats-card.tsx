@@ -14,7 +14,6 @@ interface AttendanceStatsCardProps {
 }
 
 export function AttendanceStatsCard({ stats, className }: AttendanceStatsCardProps) {
-  // Calculate total attendance numbers
   const totalAttendance = stats.reduce((acc, student) => acc + student.attended, 0);
   const totalMissed = stats.reduce((acc, student) => acc + student.missed, 0);
   const totalLate = stats.reduce((acc, student) => acc + student.late, 0);
@@ -27,12 +26,12 @@ export function AttendanceStatsCard({ stats, className }: AttendanceStatsCardPro
       </CardHeader>
       <CardContent>
         <div className="grid sm:grid-cols-4 lg:grid-cols-2 gap-4">
-          <div className="flex flex-col items-center p-4 bg-green-50 rounded-lg">
-            <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
-            <div className="text-2xl font-bold text-green-600">
+          <div className="flex flex-col items-center p-4 bg-theme/20 rounded-lg">
+            <CheckCircle className="h-8 w-8 text-theme mb-2" />
+            <div className="text-2xl font-bold text-theme">
               {totalAttendance}
             </div>
-            <div className="text-sm text-green-600">Megjelent</div>
+            <div className="text-sm text-theme">Megjelent</div>
           </div>
           <div className="flex flex-col items-center p-4 bg-red-50 rounded-lg">
             <XCircle className="h-8 w-8 text-red-600 mb-2" />

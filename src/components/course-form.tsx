@@ -15,12 +15,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
 import { useAuthStore } from "@/hooks/useAuth";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, FileUp, FileText, AlertCircle, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "@/lib/constants";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { useDropzone } from 'react-dropzone';
 
 export interface Student {
   neptun_code: string;
@@ -70,6 +73,9 @@ export function CourseForm({ initialData, courseId, university, mode, onSuccess 
   const [students, setStudents] = useState<Student[]>(initialData?.students || []);
   const [newStudent, setNewStudent] = useState<Student>({ name: '', neptun_code: '' });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [csvDialogOpen, setCsvDialogOpen] = useState(false);
+  const [csvPreview, setCsvPreview] = useState<Student[]>([]);
+  const [csvError, setCsvError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof courseFormSchema>>({
     resolver: zodResolver(courseFormSchema),
@@ -124,6 +130,113 @@ export function CourseForm({ initialData, courseId, university, mode, onSuccess 
     const updatedStudents = students.filter((_, i) => i !== index);
     setStudents(updatedStudents);
     form.setValue('students', updatedStudents);
+  };
+
+  const handleImportCSV = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        
+        // Reset preview and error state
+        setCsvPreview([]);
+        setCsvError(null);
+        
+        // Parse CSV
+        const rows = content.split('\n').filter(row => row.trim() !== '');
+        
+        // Validate structure
+        const importedStudents: Student[] = [];
+        const errors: string[] = [];
+        let lineNum = 1;
+        
+        rows.forEach(row => {
+          // Split by comma or semicolon (common in European CSV files)
+          const columns = row.split(/[,;]/).map(col => col.trim());
+          
+          if (columns.length < 2) {
+            errors.push(`Sor ${lineNum}: Nem elegendő oszlop (név és neptun kód szükséges)`);
+          } else {
+            const name = columns[0].replace(/"/g, ''); // Remove quotes if present
+            const neptunCode = columns[1].replace(/"/g, '').toUpperCase(); // Remove quotes and capitalize
+            
+            if (!name) {
+              errors.push(`Sor ${lineNum}: Hiányzó név`);
+            }
+            
+            if (!isValidNeptunCode(neptunCode)) {
+              errors.push(`Sor ${lineNum}: Érvénytelen Neptun kód (${neptunCode})`);
+            }
+            
+            importedStudents.push({
+              name,
+              neptun_code: neptunCode
+            });
+          }
+          
+          lineNum++;
+        });
+        
+        // Handle errors
+        if (errors.length > 0) {
+          setCsvError(errors.join('\n'));
+        } else {
+          setCsvPreview(importedStudents);
+        }
+        
+      } catch (error) {
+        setCsvError('A CSV fájl feldolgozása közben hiba történt.');
+        console.error('CSV parsing error:', error);
+      }
+    };
+    
+    reader.readAsText(file);
+  };
+
+  // React-dropzone implementation
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      handleImportCSV(acceptedFiles[0]);
+    }
+  }, []);
+  
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    isDragAccept,
+    isDragReject
+  } = useDropzone({
+    onDrop,
+    accept: {
+      'text/csv': ['.csv'],
+      'application/vnd.ms-excel': ['.csv'],
+    },
+    maxFiles: 1,
+    multiple: false
+  });
+
+  const confirmCsvImport = () => {
+    if (csvPreview.length > 0) {
+      const existingNeptunCodes = new Set(students.map(s => s.neptun_code));
+      
+      const newStudents = [
+        ...students,
+        ...csvPreview.filter(s => !existingNeptunCodes.has(s.neptun_code))
+      ];
+      
+      setStudents(newStudents);
+      form.setValue('students', newStudents);
+      setCsvDialogOpen(false);
+      
+      const duplicateCount = csvPreview.length - (newStudents.length - students.length);
+      
+      if (duplicateCount > 0) {
+        toast.info(`${csvPreview.length - duplicateCount} hallgató importálva. ${duplicateCount} duplikáció kihagyva.`);
+      } else {
+        toast.success(`${csvPreview.length} hallgató sikeresen importálva.`);
+      }
+    }
   };
 
   const courseMutation = useMutation({
@@ -219,6 +332,25 @@ export function CourseForm({ initialData, courseId, university, mode, onSuccess 
         <Card className="p-3 sm:p-4 md:p-6 flex-1 flex flex-col">
           <div className="flex justify-between items-center mb-3 sm:mb-4">
             <h2 className="text-base sm:text-lg md:text-xl font-semibold">Hallgatók ({students.length})</h2>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCsvDialogOpen(true)}
+                    className="flex items-center gap-2 text-xs sm:text-sm"
+                  >
+                    <FileUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>CSV import</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Hallgatók importálása CSV fájlból</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="space-y-3 sm:space-y-4 flex-1 flex flex-col">
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_200px_40px] gap-2 sm:gap-3 items-end">
@@ -366,6 +498,107 @@ export function CourseForm({ initialData, courseId, university, mode, onSuccess 
             {courseMutation.isPending ? (mode === 'create' ? "Létrehozás..." : "Mentés...") : (mode === 'create' ? "Létrehozás" : "Mentés")}
           </Button>
         </div>
+
+        {/* CSV Import Dialog */}
+        <Dialog open={csvDialogOpen} onOpenChange={setCsvDialogOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Hallgatók importálása CSV fájlból</DialogTitle>
+              <DialogDescription>
+                Tölts fel egy CSV fájlt a hallgatók importálásához. A formátum: név,neptun_kód
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-2 space-y-4">
+              <div className="flex flex-col gap-2">
+                <div 
+                  {...getRootProps()} 
+                  className={cn(
+                    "border-2 border-dashed rounded-md p-6 flex flex-col items-center justify-center cursor-pointer transition-colors",
+                    isDragActive && isDragAccept && "border-green-500 bg-green-50",
+                    isDragActive && isDragReject && "border-red-500 bg-red-50",
+                    isDragActive && !isDragAccept && !isDragReject && "border-primary bg-primary/5",
+                    !isDragActive && "border-border hover:border-primary/50 hover:bg-muted/50"
+                  )}
+                >
+                  <input {...getInputProps()} />
+                  {isDragActive ? (
+                    <>
+                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                      <p className="text-sm font-medium">
+                        {isDragReject ? 'Csak CSV fájlok tölthetők fel!' : 'Engedd el a fájlt!'}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-8 w-8 text-muted-foreground mb-2" />
+                      <p className="text-sm font-medium">Kattints vagy húzd ide a CSV fájlt</p>
+                      <p className="text-xs text-muted-foreground">Csak .csv kiterjesztésű fájlok</p>
+                    </>
+                  )}
+                </div>
+                
+                {/* Example format */}
+                <div className="text-xs text-muted-foreground mt-1 bg-muted p-2 rounded border">
+                  <p className="font-medium mb-1">Példa formátum:</p>
+                  <pre className="font-mono">Kiss János,ABC123<br/>Nagy Béla,XYZ789</pre>
+                </div>
+                
+                {csvError && (
+                  <div className="text-red-500 bg-red-50 p-2 rounded border border-red-200 text-sm">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <pre className="text-xs whitespace-pre-wrap font-mono">{csvError}</pre>
+                    </div>
+                  </div>
+                )}
+                
+                {csvPreview.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium mb-2">Előnézet ({csvPreview.length} hallgató):</h3>
+                    <div className="max-h-52 overflow-y-auto border rounded-md">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-12 py-2">#</TableHead>
+                            <TableHead className="py-2">Név</TableHead>
+                            <TableHead className="w-28 py-2">Neptun kód</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {csvPreview.map((student, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="py-1">{index + 1}</TableCell>
+                              <TableCell className="py-1">{student.name}</TableCell>
+                              <TableCell className="py-1 font-mono">{student.neptun_code}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <DialogFooter className="flex-col space-y-2 sm:space-y-0 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setCsvDialogOpen(false)}
+              >
+                Mégsem
+              </Button>
+              <Button
+                type="button"
+                onClick={confirmCsvImport}
+                disabled={csvPreview.length === 0 || !!csvError}
+              >
+                Importálás ({csvPreview.length} hallgató)
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </form>
     </Form>
   );

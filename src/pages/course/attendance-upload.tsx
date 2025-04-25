@@ -9,7 +9,7 @@ import { useCourse } from "@/hooks/useCourse";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { hu } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Camera, Image, X } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -18,7 +18,8 @@ import {
 import { cn } from "@/lib/utils";
 import { AttendanceData } from "@/lib/constants";
 import AttendanceTable from "@/components/attendance-table";
-import { base64ToFile } from '@/lib/utils';
+import { base64ToFile } from "@/lib/utils";
+import { useDropzone } from "react-dropzone";
 
 interface ProcessedData {
   students: AttendanceData[];
@@ -31,26 +32,47 @@ const AttendanceUpload = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showResults, setShowResults] = useState(false);
-  const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
+  const [processedData, setProcessedData] = useState<ProcessedData | null>(
+    null
+  );
   const streamRef = useRef<MediaStream | null>(null);
   const [progress, setProgress] = useState(0);
 
   const { courseId } = useParams();
   const { data: course } = useCourse(courseId);
 
+  const onDrop = React.useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles?.length > 0) {
+      const file = acceptedFiles[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png"],
+    },
+    maxFiles: 1,
+    multiple: false,
+  });
+
   const processImageMutation = useMutation({
     mutationFn: async (imageData: string) => {
-      
       const file = base64ToFile(imageData, "attendance.jpg", "image/jpeg");
       const formData = new FormData();
       formData.append("image", file);
-      
+
       // Add student names to the request if we have course data
       if (course?.students) {
-        const studentNames = course.students.map(student => student.name);
-        formData.append('names', JSON.stringify(studentNames));
+        const studentNames = course.students.map((student) => student.name);
+        formData.append("names", JSON.stringify(studentNames));
       }
-      
+
       // Send the request with FormData
       const response = await axios.post(
         "http://localhost:5000/process_table",
@@ -78,10 +100,10 @@ const AttendanceUpload = () => {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (processImageMutation.isPending && progress < 95) {
       interval = setInterval(() => {
-        setProgress(prev => {
+        setProgress((prev) => {
           // Increase speed based on current progress
           if (prev < 30) return prev + 2;
           if (prev < 60) return prev + 1;
@@ -183,7 +205,11 @@ const AttendanceUpload = () => {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "yyyy. MMMM d.", { locale: hu }) : <span>Válassz dátumot</span>}
+                    {date ? (
+                      format(date, "yyyy. MMMM d.", { locale: hu })
+                    ) : (
+                      <span>Válassz dátumot</span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -200,16 +226,40 @@ const AttendanceUpload = () => {
 
             {!isCameraActive ? (
               <div className="space-y-4">
+                {!image && (
+                  <div
+                    {...getRootProps()}
+                    className={cn(
+                      "border-2 border-dashed rounded-lg p-6 transition-colors cursor-pointer flex flex-col items-center justify-center",
+                      isDragActive
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    )}
+                  >
+                    <input {...getInputProps()} />
+                    <Image className="h-10 w-10 text-theme/50 mb-2" />
+                    <div className="flex flex-col items-center text-center">
+                      <span className="font-medium">
+                        {isDragActive
+                          ? "Húzd ide a képet"
+                          : "Húzd ide a képet vagy kattints a feltöltéshez"}
+                      </span>
+                      <span className="text-sm text-muted-foreground mt-1">
+                        JPG, PNG fájlok (max. 10MB)
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={startCamera}
+                    variant={"theme"}
                     className="flex-1"
                   >
-                    Feltöltés eszközről
-                  </Button>
-                  <Button type="button" onClick={startCamera} className="flex-1">
-                    Fénykép készítése
+                    <Camera className="h-4 w-4 mr-2" />
+                    Kamera használata
                   </Button>
                 </div>
                 <input
@@ -229,7 +279,11 @@ const AttendanceUpload = () => {
                   className="w-full rounded-lg"
                 />
                 <div className="flex gap-4">
-                  <Button type="button" onClick={captureImage} className="flex-1">
+                  <Button
+                    type="button"
+                    onClick={captureImage}
+                    className="flex-1"
+                  >
                     Fénykép készítése
                   </Button>
                   <Button
@@ -246,41 +300,43 @@ const AttendanceUpload = () => {
 
             {image && (
               <div className="space-y-4">
-                <div className="relative aspect-[3/2] w-full overflow-hidden rounded-lg">
+                <div className="relative aspect-[3/2] w-full overflow-hidden rounded-lg border">
                   <img
                     src={image}
                     alt="Attendance sheet"
                     className="object-contain w-full h-full"
                   />
-                </div>
-                <div className="flex gap-4">
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    disabled={processImageMutation.isPending}
-                  >
-                    {processImageMutation.isPending
-                      ? `Feldolgozás folyamatban... ${Math.min(Math.round(progress), 99)}%`
-                      : "Kép feldolgozása"}
-                  </Button>
                   <Button
                     type="button"
                     onClick={() => setImage(null)}
-                    variant="outline"
-                    className="flex-1"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8"
                   >
-                    Kép törlése
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={processImageMutation.isPending}
+                >
+                  {processImageMutation.isPending
+                    ? `Feldolgozás folyamatban... ${Math.min(
+                        Math.round(progress),
+                        99
+                      )}%`
+                    : "Kép feldolgozása"}
+                </Button>
               </div>
             )}
           </div>
         </form>
       </div>
-      {showResults && image &&  (
-        <AttendanceTable 
+      {showResults && image && (
+        <AttendanceTable
           attendanceImage={image!}
-          attendanceData={processedData?.students || []} 
+          attendanceData={processedData?.students || []}
           courseId={courseId!}
           date={date}
         />

@@ -36,15 +36,16 @@ export function AttendancePieChart({ stats, className }: AttendanceDonutChartPro
   const totalAll = totalAttendance + totalMissed + totalLate + totalExcused
 
   const chartData = [
-    { name: "Megjelent", value: totalAttendance, color: "#22c55e" },
-    { name: "Nem jelent meg", value: totalMissed, color: "#ef4444" },
+    { name: "Megjelent", value: totalAttendance, color: "oklch(58.8% 0.158 241.966)" },
+    { name: "Nem jelent meg", value: totalMissed, color: "oklch(88.5% 0.062 18.334)" },
     { name: "Késett", value: totalLate, color: "#eab308" },
     { name: "Igazoltan távol", value: totalExcused, color: "#3b82f6" },
   ]
 
+
   const chartConfig: ChartConfig = {
-    "Megjelent": { label: "Megjelent", color: "#22c55e" },
-    "Nem jelent meg": { label: "Nem jelent meg", color: "#ef4444" },
+    "Megjelent": { label: "Megjelent", color: "oklch(58.8% 0.158 241.966)" },
+    "Nem jelent meg": { label: "Nem jelent meg", color: "oklch(80.8% 0.114 19.571)" },
     "Késett": { label: "Késett", color: "#eab308" },
     "Igazoltan távol": { label: "Igazoltan távol", color: "#3b82f6" },
   }

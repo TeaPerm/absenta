@@ -12,7 +12,14 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Toaster />
+        <Toaster
+          toastOptions={{
+            style: {
+              background: "#0284c7",
+              border: "1px solid oklch(90.1% 0.058 230.902)",
+            },
+          }}
+        />
         <Router />
       </BrowserRouter>
     </QueryClientProvider>
