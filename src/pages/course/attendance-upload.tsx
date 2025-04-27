@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { useParams } from "react-router-dom";
 import { useCourse } from "@/hooks/useCourse";
@@ -20,19 +20,23 @@ import { AttendanceData } from "@/lib/constants";
 import AttendanceTable from "@/components/attendance-table";
 import { base64ToFile } from "@/lib/utils";
 import { useDropzone } from "react-dropzone";
+import CameraComponent from "@/components/Camera";
 
 interface ProcessedData {
   students: AttendanceData[];
+}
+
+interface ApiErrorResponse {
+  message: string;
+  [key: string]: unknown;
 }
 
 const AttendanceUpload = () => {
   const [image, setImage] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [date, setDate] = useState<Date>(new Date());
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [showResults, setShowResults] = useState(false);
   const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const [progress, setProgress] = useState(0);
 
   const { courseId } = useParams();
@@ -105,8 +109,10 @@ const AttendanceUpload = () => {
       setProcessedData(data);
       setShowResults(true);
     },
-    onError: (error) => {
-      toast.error("Sikertelen képfeldolgozás: " + error.message, {
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      const errorMessage =
+        error.response?.data?.message || "Ismeretlen hiba történt";
+      toast.error(`Sikertelen képfeldolgozás: ${errorMessage}`, {
         style: {
           background: "#dc2626",
           border: "1px solid #fca5a5",
@@ -156,52 +162,6 @@ const AttendanceUpload = () => {
     handleProcessImage();
   };
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'environment' // Use back camera on mobile devices
-        } 
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-      streamRef.current = stream;
-      setIsCameraActive(true);
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      toast.error("Hiba a kamera elérése közben", {
-        style: {
-          background: "#dc2626",
-          border: "1px solid #fca5a5",
-          color: "white",
-        },
-      });
-    }
-  };
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-      streamRef.current = null;
-      setIsCameraActive(false);
-    }
-  };
-
-  const captureImage = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement("canvas");
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-      setImage(canvas.toDataURL("image/jpeg"));
-      stopCamera();
-    }
-  };
-
   const handleClearImage = () => {
     setImage(null);
     setShowResults(false);
@@ -213,6 +173,20 @@ const AttendanceUpload = () => {
       setProgress(0);
       processImageMutation.mutate(image);
     }
+  };
+
+  // Handle photo captured from CameraComponent
+  const handlePhotoCaptured = (photoData: string) => {
+    setImage(photoData);
+    setIsCameraActive(false);
+  };
+
+  const openCamera = () => {
+    setIsCameraActive(true);
+  };
+
+  const closeCamera = () => {
+    setIsCameraActive(false);
   };
 
   return (
@@ -257,30 +231,8 @@ const AttendanceUpload = () => {
 
             {isCameraActive ? (
               <div className="space-y-3 sm:space-y-4">
-                <div className="relative w-full overflow-hidden rounded-lg border bg-black">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    className="w-full h-auto"
-                  />
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                  <Button
-                    type="button"
-                    onClick={captureImage}
-                    className="flex-1"
-                  >
-                    Fénykép készítése
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={stopCamera}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Mégsem
-                  </Button>
+                <div className="relative bg-black rounded-lg overflow-hidden border">
+                  <CameraComponent onCapture={handlePhotoCaptured} onCancel={closeCamera} />
                 </div>
               </div>
             ) : image ? (
@@ -315,7 +267,9 @@ const AttendanceUpload = () => {
                         <div className="w-full bg-white/20 rounded-full h-1 mt-1">
                           <div
                             className="bg-white h-1 rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(Math.round(progress), 100)}%` }}
+                            style={{
+                              width: `${Math.min(Math.round(progress), 100)}%`,
+                            }}
                           ></div>
                         </div>
                       </div>
@@ -356,7 +310,7 @@ const AttendanceUpload = () => {
 
                 <Button
                   type="button"
-                  onClick={startCamera}
+                  onClick={openCamera}
                   variant={"theme"}
                   className="w-full"
                 >
@@ -368,7 +322,7 @@ const AttendanceUpload = () => {
           </div>
         </form>
       </div>
-      
+
       {showResults && image && (
         <AttendanceTable
           attendanceImage={image}

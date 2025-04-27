@@ -52,10 +52,10 @@ export function Steps() {
                   <span className="font-bold">1</span>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">
+              <h3 className="text-xl font-bold text-center text-slate-900">
                 Névsor generálás
               </h3>
-              <p className="mt-4 text-slate-600">
+              <p className="mt-4 text-slate-600 text-center">
                 Töltse fel a hallgatói névsort és generáljon nyomtatható
                 sablonokat.
               </p>
@@ -71,8 +71,10 @@ export function Steps() {
                   <span className="font-bold">2</span>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Adatgyűjtés</h3>
-              <p className="mt-4 text-slate-600">
+              <h3 className="text-xl font-bold text-center text-slate-900">
+                Adatgyűjtés
+              </h3>
+              <p className="mt-4 text-slate-600 text-center">
                 A hallgatók aláírják a kinyomtatott jelenléti ívet.
               </p>
             </div>
@@ -89,10 +91,10 @@ export function Steps() {
                   </div>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">
+              <h3 className="text-xl font-bold text-center text-slate-900">
                 Képfeldolgozás
               </h3>
-              <p className="mt-4 text-slate-600">
+              <p className="mt-4 text-slate-600 text-center">
                 Készítsen fényképet az aláírt ívről, és algoritmusunk felismeri
                 az aláírásokat.
               </p>
@@ -108,10 +110,10 @@ export function Steps() {
                   <span className="font-bold">4</span>
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-slate-900">
+              <h3 className="text-xl font-bold text-center text-slate-900">
                 Adatexportálás
               </h3>
-              <p className="mt-4 text-slate-600">
+              <p className="mt-4 text-slate-600 text-center">
                 Exportálja a jelenléti adatokat az egyetemi rendszerekkel
                 kompatibilis formátumban.
               </p>

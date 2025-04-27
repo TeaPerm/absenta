@@ -117,7 +117,7 @@ export function LoginForm() {
                     </div>
                   )}
                 />
-                <Button type="submit" className="w-full">
+                <Button type="submit" variant="theme" className="w-full">
                   Belépés
                 </Button>
                 {form.formState.errors.root && (
@@ -137,10 +137,9 @@ export function LoginForm() {
               </div>
             </form>
           </Form>
-          <div className="relative hidden bg-muted md:block">
+          <div className="relative hidden bg-muted md:block p-2">
             <img
-              src="/placeholder.png"
-              alt="Image"
+              src="/timeline.svg"
               className="items-center object-cover"
             />
           </div>

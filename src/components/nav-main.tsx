@@ -1,4 +1,4 @@
-import { ChevronRight, SquareTerminal } from "lucide-react";
+import { ChevronRight, Frown, SquareTerminal } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,7 +19,6 @@ import { useAuthStore } from "@/hooks/useAuth";
 import { useAppStore } from "@/hooks/useAppStore";
 import { Link, useParams } from "react-router-dom";
 import { useCourses } from "@/hooks/useCourses";
-import { Button } from "./ui/button";
 import { useEffect } from "react";
 
 export function NavMain() {
@@ -52,18 +51,17 @@ export function NavMain() {
         )}
 
         {courses && courses.length < 1 && (
-          <Button className="w-fit text-sm text-center">
-            <div className="flex items-center justify-center">
-              Jelenleg nincs kurzusod
-            </div>
-          </Button>
+          <div className="flex items-center">
+            <Frown className="w-4 h-4 mr-2 text-center" />
+            <span>Jelenleg nincs kurzusod</span>
+          </div>
         )}
 
         {courses &&
           courses.map((course) => (
-            <Collapsible 
-              key={course._id} 
-              asChild 
+            <Collapsible
+              key={course._id}
+              asChild
               className="group/collapsible"
               open={course._id === activeCourseId}
               onOpenChange={(isOpen) => {
@@ -114,7 +112,7 @@ const sidebarMenuSubitems = [
     url: "",
   },
   {
-    title: "Tanulók",
+    title: "Hallgatók",
     url: "/students",
   },
   {

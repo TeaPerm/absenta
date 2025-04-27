@@ -10,7 +10,7 @@ export default function Register() {
           <div className="grid items-center md:grid-cols-2 gap-8 lg:gap-12">
             <div>
               <p className="inline-block text-sm font-medium bg-clip-text bg-gradient-to-l from-blue-600 to-violet-500 text-transparent dark:from-blue-400 dark:to-violet-400">
-                Oktatási innováció 2025
+                Oktatói segédprogram
               </p>
               {/* Title */}
               <div className="mt-4 md:mb-12 max-w-2xl">
@@ -47,8 +47,8 @@ export default function Register() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <img
-                        className="h-8 w-8 rounded-full"
-                        src="https://placehold.co/100x100"
+                        className="h-12 w-12 rounded-full"
+                        src="/hey.png"
                         alt="Image Description"
                       />
                     </div>

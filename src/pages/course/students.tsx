@@ -69,7 +69,6 @@ export function Students() {
 
   const courseStats = stats || { courseName: course?.name || "", totalSessions: 0, students: [] };
 
-  // Calculate overall attendance statistics
   const totalStudents = courseStats.students.length;
   const totalAttendance = courseStats.students.reduce((sum, student) => sum + student.attended, 0);
   const totalMissed = courseStats.students.reduce((sum, student) => sum + student.missed, 0);
@@ -145,8 +144,8 @@ export function Students() {
           </CardHeader>
           <CardContent className="p-0 sm:p-4 md:p-6 flex-1 flex flex-col">
             <div className="overflow-x-auto -mx-4 sm:mx-0 flex-1">
-              <div className="min-w-[600px] px-4 sm:px-0 h-full">
-                <Table>
+              <div className="max-w-[400px] lg:max-w-[800px] px-4 sm:px-0 h-full">
+                <Table maxWidth="600px">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[5%] sm:w-[10%]">#</TableHead>

@@ -127,9 +127,9 @@ const AttendanceView = () => {
   return (
     <Container className="py-8">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-2xl font-bold text-center">
           Jelenléti ív -{" "}
-          {format(new Date(record.date), "yyyy. MMMM d. HH:mm", {
+          {format(new Date(record.date), "yyyy. MMMM d.", {
             locale: hu,
           })}
         </h1>

@@ -4,9 +4,8 @@ import { useAppStore } from "@/hooks/useAppStore";
 import { useParams } from "react-router-dom";
 import { CourseCard } from "@/components/course-card";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";    
 import { useEffect } from "react";
+import { NewCourseCard } from "@/components/new-course-card";
 
 export function Dashboard() {
   const token = useAuthStore((state) => state.token);
@@ -22,11 +21,6 @@ export function Dashboard() {
     <Container className="py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Vezérlőpult</h1>
-        <Link to={`/${university}/create`}>
-          <Button className="bg-theme text-white hover:bg-theme/80">
-            Kurzus hozzáadása
-          </Button>
-        </Link>
       </div>
 
       {isLoading ? (
@@ -44,6 +38,7 @@ export function Dashboard() {
               university={university!}
             />
           ))}
+          <NewCourseCard university={university!} />
         </div>
       )}
     </Container>

@@ -8,8 +8,6 @@ export function NavLinks() {
   return [
     ['Lépések', '/#steps'],
     ['Funkciók', '/#features'],
-    ['Pricing', '/#pricing'],
-    ['FAQs', '/#faqs'],
   ].map(([label, href], index) => (
     <a
       key={label}

@@ -2,11 +2,24 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+function Table({ 
+  className, 
+  maxWidth, 
+  containerClassName,
+  ...props 
+}: React.ComponentProps<"table"> & { 
+  maxWidth?: string | number,
+  containerClassName?: string 
+}) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className={cn(
+        "relative overflow-auto",
+        maxWidth ? "max-w-[--max-width]" : "w-full",
+        containerClassName
+      )}
+      style={maxWidth ? { "--max-width": typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth } as React.CSSProperties : undefined}
     >
       <table
         data-slot="table"

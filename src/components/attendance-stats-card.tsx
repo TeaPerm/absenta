@@ -47,12 +47,12 @@ export function AttendanceStatsCard({ stats, className }: AttendanceStatsCardPro
             </div>
             <div className="text-sm text-yellow-600">Késett</div>
           </div>
-          <div className="flex flex-col items-center p-4 bg-blue-50 rounded-lg">
-            <FileText className="h-8 w-8 text-blue-600 mb-2" />
-            <div className="text-2xl font-bold text-blue-600">
+          <div className="flex flex-col items-center p-4 bg-gray-200 rounded-lg">
+            <FileText className="h-8 w-8 text-gray-600 mb-2" />
+            <div className="text-2xl font-bold text-gray-600">
               {totalExcused}
             </div>
-            <div className="text-sm text-blue-600">Igazoltan távol</div>
+            <div className="text-sm text-gray-600">Igazoltan távol</div>
           </div>
         </div>
       </CardContent>

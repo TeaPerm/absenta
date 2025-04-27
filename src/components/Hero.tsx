@@ -1,7 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Container } from "@/components/ui/container";  
+import { Container } from "@/components/ui/container";
+import { useAuthStore } from "@/hooks/useAuth";
+import { ArrowUpRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function Hero() {
+  const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   return (
     <Container className="pt-20 pb-16 text-center lg:pt-32">
       <h1 className="mx-auto sm:leading-20 max-w-4xl text-4xl font-bold tracking-tight text-slate-900 sm:text-7xl">
@@ -23,16 +29,16 @@ export function Hero() {
         Csak le kell fényképeznie a jelenléti ívet, a többit mi megoldjuk.
       </p>
       <div className="mt-10 flex justify-center gap-x-6">
-        <Button>6 hónap ingyen</Button>
-        <Button variant="outline">
-          <svg
-            aria-hidden="true"
-            className="h-3 w-3 flex-none fill-blue-600 group-active:fill-current"
+        {!isAuthenticated && (
+          <Button
+            variant="theme"
+            className="flex items-center gap-x-2"
+            onClick={() => navigate("/register")}
           >
-            <path d="m9.997 6.91-7.583 3.447A1 1 0 0 1 1 9.447V2.553a1 1 0 0 1 1.414-.91L9.997 5.09c.782.355.782 1.465 0 1.82Z" />
-          </svg>
-          <span className="ml-3">Videó megtekintése</span>
-        </Button>
+            Kezdj bele
+            <ArrowUpRight className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </Container>
   );

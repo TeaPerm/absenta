@@ -1,10 +1,19 @@
+import { useNavigate } from "react-router-dom";
+
 const Logo = () => {
+  const navigate = useNavigate();
   return (
-    <p className="text-2xl font-bold text-theme">
+    <div
+      className="text-2xl font-bold text-theme cursor-pointer"
+      onClick={() => {
+        navigate("/");
+        window.scrollTo(0, 0);
+      }}
+    >
       Absent
       <span className="text-theme/30">a</span>
-    </p>
-  )
-}
+    </div>
+  );
+};
 
-export default Logo
+export default Logo;

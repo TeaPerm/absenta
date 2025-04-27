@@ -311,7 +311,7 @@ const Attendance = () => {
               Sablon nyomtatása
             </Button>
             <Link to="upload" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto" variant="theme">
                 <FolderInput className="mr-2 h-4 w-4" />
                 Új jelenléti ív
               </Button>
@@ -320,8 +320,8 @@ const Attendance = () => {
         </div>
 
         <div className="overflow-x-auto -mx-4 sm:mx-0">
-          <div className="min-w-[600px] px-4 sm:px-0">
-            <Table>
+          <div className="max-w-[400px] lg:max-w-[800px] px-4 sm:px-0">
+            <Table maxWidth="400px">
               <TableHeader>
                 <TableRow className="text-center">
                   <TableHead className="text-center">
@@ -657,7 +657,6 @@ const Attendance = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Hidden printable component */}
       <div id="printable-attendance" className="hidden">
         <PrintableAttendance
           students={students}
