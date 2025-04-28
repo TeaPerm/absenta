@@ -8,6 +8,7 @@ export function NavLinks() {
   return [
     ['Lépések', '/#steps'],
     ['Funkciók', '/#features'],
+    ['GYIK', '/#faq'],
   ].map(([label, href], index) => (
     <a
       key={label}

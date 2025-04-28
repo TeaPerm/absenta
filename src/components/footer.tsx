@@ -1,44 +1,73 @@
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { Container } from "./ui/container";
-import Logo from "@/components/ui/logo";
-import { NavLinks } from "@/components/ui/navLink";
-interface FooterProps {
-  className?: string;
-}
+import { NavLinks } from "./ui/navLink";
 
-export function Footer({ className }: FooterProps) {
-  const currentYear = new Date().getFullYear();
+const navigation = {
+  social: [
+    {
+      name: "Gmail",
+      href: "mailto:lethiennam111@gmail.com",
+      icon: () => (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          x="0px"
+          y="0px"
+          width="25"
+          height="25"
+          viewBox="0 0 48 48"
+        >
+          <path
+            fill="#4caf50"
+            d="M45,16.2l-5,2.75l-5,4.75L35,40h7c1.657,0,3-1.343,3-3V16.2z"
+          ></path>
+          <path
+            fill="#1e88e5"
+            d="M3,16.2l3.614,1.71L13,23.7V40H6c-1.657,0-3-1.343-3-3V16.2z"
+          ></path>
+          <polygon
+            fill="#e53935"
+            points="35,11.2 24,19.45 13,11.2 12,17 13,23.7 24,31.95 35,23.7 36,17"
+          ></polygon>
+          <path
+            fill="#c62828"
+            d="M3,12.298V16.2l10,7.5V11.2L9.876,8.859C9.132,8.301,8.228,8,7.298,8h0C4.924,8,3,9.924,3,12.298z"
+          ></path>
+          <path
+            fill="#fbc02d"
+            d="M45,12.298V16.2l-10,7.5V11.2l3.124-2.341C38.868,8.301,39.772,8,40.702,8h0 C43.076,8,45,9.924,45,12.298z"
+          ></path>
+        </svg>
+      ),
+    },
+  ],
+};
+
+export function Footer() {
+  const year = new Date().getFullYear();
 
   return (
-    <Container className={cn("text-black", className)}>
-      <div className="container mx-auto py-8">
-        <div className="flex justify-center mb-8">
-          <Logo />
+    <footer className="bg-white">
+      <div className="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
+        <nav
+          aria-label="Footer"
+          className="-mb-6 flex flex-wrap justify-center gap-x-12 gap-y-3 text-sm/6"
+        >
+          <NavLinks />
+        </nav>
+        <div className="mt-16 flex justify-center gap-x-10">
+          {navigation.social.map((item) => (
+            <a
+              key={item.name}
+              href={item.href}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              <span className="sr-only">{item.name}</span>
+              <item.icon aria-hidden="true" />
+            </a>
+          ))}
         </div>
-
-        <div className="flex justify-center space-x-8 mb-16 gap-10">
-            <NavLinks />
-        </div>
-
-        <Separator className="mb-8 bg-gray-700" />
-
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div>
-            <p className="text-sm">
-              © {currentYear} 
-              <span className="text-gray-700">{" "}Absent</span>
-              <span className="text-gray-700/50">a</span>
-            </p>
-          </div>
-
-        <div>
-            <p className="text-sm">
-                Készítette: Le Thien Nam
-            </p>
-        </div>
-        </div>
+        <p className="mt-10 text-center text-sm/6 text-gray-600">
+          &copy; {year} Absenta
+        </p>
       </div>
-    </Container>
+    </footer>
   );
 }
