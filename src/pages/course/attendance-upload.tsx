@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { AttendanceData } from "@/lib/constants";
+import { AttendanceData, SCRIPT_URL } from "@/lib/constants";
 import AttendanceTable from "@/components/attendance-table";
 import { base64ToFile } from "@/lib/utils";
 import { useDropzone } from "react-dropzone";
@@ -80,15 +80,13 @@ const AttendanceUpload = () => {
       const formData = new FormData();
       formData.append("image", file);
 
-      // Add student names to the request if we have course data
       if (course?.students) {
         const studentNames = course.students.map((student) => student.name);
         formData.append("names", JSON.stringify(studentNames));
       }
 
-      // Send the request with FormData
       const response = await axios.post(
-        "http://localhost:5000/process_table",
+        `${SCRIPT_URL}/process_table`,
         formData,
         {
           headers: {
@@ -128,14 +126,13 @@ const AttendanceUpload = () => {
     if (processImageMutation.isPending && progress < 95) {
       interval = setInterval(() => {
         setProgress((prev) => {
-          // Progressive speed adjustments
           if (prev < 20) return prev + 0.8;
           if (prev < 40) return prev + 0.6;
           if (prev < 60) return prev + 0.4;
           if (prev < 80) return prev + 0.3;
           return prev + 0.2;
         });
-      }, 20);
+      }, 100);
     }
 
     if (!processImageMutation.isPending) {

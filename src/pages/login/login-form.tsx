@@ -48,7 +48,6 @@ export function LoginForm() {
       form.setError("root", { message: errors.message });
     },
     onSuccess: async (response) => {
-      console.log(response);
       signIn(response.data.token);
       navigate("/");
     },
@@ -56,7 +55,6 @@ export function LoginForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     mutation.mutate(values);
-    console.log(values);
   }
 
   return (

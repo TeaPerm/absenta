@@ -1,4 +1,5 @@
 export const API_URL = "http://localhost:3001/api";
+export const SCRIPT_URL = "http://localhost:5000";
 
 export interface User {
     name: string;
