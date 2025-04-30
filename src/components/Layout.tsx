@@ -18,23 +18,16 @@ import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useCourse } from "@/hooks/useCourse";
 
-// Function to generate breadcrumbs based on URL
 const generateBreadcrumbs = (pathname: string) => {
-  // Remove leading slash and split by slashes
   const paths = pathname.replace(/^\/+/, "").split("/");
 
-  // Create breadcrumb items
   const breadcrumbs = paths.map((path, index) => {
-    // Skip empty parts
     if (!path) return null;
 
-    // Create the URL for this breadcrumb
     const url = `/${paths.slice(0, index + 1).join("/")}`;
 
-    // Determine if this is the last item (current page)
     const isLast = index === paths.length - 1;
 
-    // Format path for display (capitalize, replace dashes with spaces, etc.)
     const formattedPath = path
       .replace(/-/g, " ")
       .replace(/^\w/, (c) => c.toUpperCase());
@@ -47,7 +40,6 @@ const generateBreadcrumbs = (pathname: string) => {
       "create": "Új kurzus létrehozása"
     };
 
-    // Use translation if available, otherwise use formatted path
     const translatedPath = translations[path] || formattedPath;
 
     return { path: translatedPath, url, isLast };
@@ -56,7 +48,6 @@ const generateBreadcrumbs = (pathname: string) => {
   return breadcrumbs.filter(Boolean);
 };
 
-// Breadcrumbs component
 const AppBreadcrumbs = () => {
   const location = useLocation();
   const paths = location.pathname.replace(/^\/+/, "").split("/");
@@ -68,7 +59,6 @@ const AppBreadcrumbs = () => {
   useEffect(() => {
     const crumbs = generateBreadcrumbs(location.pathname);
     
-    // If we have course data and we're not on the create page, replace the course ID with the course name
     if (course && crumbs && !isCreatePage) {
       const updatedCrumbs = crumbs.map((crumb, index) => {
         if (index === 1 && crumb) { // The course ID is at index 1

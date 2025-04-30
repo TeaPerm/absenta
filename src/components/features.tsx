@@ -125,14 +125,10 @@ export function Features() {
     >
       <Container>
         <div className="mx-auto max-w-2xl md:text-center">
-          <h2 className="font-display text-3xl tracking-tight text-slate-900 sm:text-4xl">
-            Forradalmasítsa a jelenléti adminisztrációt
-          </h2>
-          <p className="mt-4 text-lg tracking-tight text-slate-700">
-            Az Absenta intelligens megoldásaival akár 80%-kal csökkentheti az
-            adminisztrációra fordított időt, miközben pontosabb és megbízhatóbb
-            nyilvántartást vezet.
-          </p>
+        <h2 className="text-center text-base/7 font-semibold text-theme">Gyorsítsd meg a dolgod</h2>
+        <p className="mx-auto mt-2 max-w-lg text-balance text-center text-4xl font-semibold tracking-tight text-gray-950 sm:text-5xl">
+          Minden amit tudnod kell az Absenta funkcióiról
+        </p>
         </div>
 
         {/* Bento Grid Implementation */}

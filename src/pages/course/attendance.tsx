@@ -233,10 +233,10 @@ const Attendance = () => {
                   width: 10%;
                 }
                 .w-\\[20\\%\\] {
-                  width: 20%;
+                  width: 30%;
                 }
                 .w-\\[40\\%\\] {
-                  width: 40%;
+                  width: 30%;
                 }
                 .text-center {
                   text-align: center;

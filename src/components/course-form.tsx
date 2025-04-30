@@ -88,7 +88,6 @@ export function CourseForm({ initialData, courseId, university, mode, onSuccess 
 
   useEffect(() => {
     if (initialData) {
-      // Create a properly typed object for form.reset
       const formData: z.infer<typeof courseFormSchema> = {
         name: initialData.name,
         university: initialData.university,
