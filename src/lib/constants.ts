@@ -1,5 +1,5 @@
-export const API_URL = "http://localhost:3001/api";
-export const SCRIPT_URL = "http://localhost:5000";
+export const API_URL = import.meta.env.VITE_API_URL
+export const SCRIPT_URL = import.meta.env.VITE_SCRIPT_URL;
 
 export interface User {
     name: string;
